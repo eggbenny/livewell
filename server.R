@@ -139,6 +139,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           "Population", pop,
+          fill = TRUE,
           color = "teal"
         )
         
@@ -188,6 +189,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           "Est' Population Impacted", value3, 
+          fill = TRUE,
           color = "teal"
         )
     })
