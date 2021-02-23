@@ -254,7 +254,7 @@ body <- dashboardBody(
     
     tabItem(tabName = "map",
             
-      h2("Play Index County Map"),
+      h2("Play Index County Map (Quintiles)"),
       
       box(width = 12,
         plotOutput("map", height = "725px")

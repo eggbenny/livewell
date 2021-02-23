@@ -88,7 +88,9 @@ fixed_z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
 fixed_z_data_1_wgeo <- fixed_z_data_1_wgeo_long %>%
         dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
         pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        ungroup() %>%
         mutate(
-          score = play_w_percent_fair_or_poor_health) # Use fair and poor health as a proxy
+          score = play_w_percent_fair_or_poor_health,
+          quintile = ntile(score, 5)) # Use fair and poor health as a proxy
       
 names(fixed_z_data_1_wgeo) <- str_replace_all(names(fixed_z_data_1_wgeo), "^value_", "")

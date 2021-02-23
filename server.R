@@ -809,12 +809,12 @@ shinyServer(function(input, output, session) {
     map_data <- left_join(fixed_z_data_1_wgeo, countydata, by = c("fips" = "county_fips")) %>%
       left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
     
-    ggplot(map_data, aes(long, lat, group = fips, fill = score)) +
+    ggplot(map_data, aes(long, lat, group = fips, fill = quintile)) +
       geom_polygon(color = NA) +
       coord_map() +
       labs(fill = "Play Index") +
       theme_minimal() +
-      scale_fill_continuous(limits = c(0,100), breaks = seq(0, 100, 10)) +
+      scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
       guides(fill = guide_colourbar(nbbin = 100)) +
       theme(legend.position = "bottom",
             legend.key.width = unit(7, "cm"))
