@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Dec 5 2020
+# Feb 22 2021
 
 
 # --- ui --------------------------------------------------
@@ -17,7 +17,9 @@ sidebar <- dashboardSidebar(
     menuItem("Data Table", icon = icon("th"),
              tabName = "dataTable"),
     menuItem("Play Index", icon = icon("bar-chart-o"),
-             tabName = "playIndex")
+             tabName = "playIndex"),
+    menuItem("Map", icon = icon("map-marked"),
+             tabName = "map")
   ) # End of sidebarMenu
   
 ) # End of dashboardSidebar
@@ -215,9 +217,48 @@ body <- dashboardBody(
       ), # End of box
       box(width = 6,
         plotOutput("test_criterion_plot_4")
+      ), # End of box
+      
+      box(width = 6,
+        plotOutput("test_criterion_plot_a1")
+      ), # End of box
+      box(width = 6,
+        plotOutput("test_criterion_plot_a2")
+      ), # End of box
+      
+      box(width = 6,
+        plotOutput("test_criterion_plot_a3")
+      ), # End of box
+      box(width = 6,
+        plotOutput("test_criterion_plot_a4")
+      ), # End of box
+    
+      box(width = 6,
+        plotOutput("test_criterion_plot_a5")
+      ), # End of box
+      box(width = 6,
+        plotOutput("test_criterion_plot_a6")
+      ), # End of box
+      
+      box(width = 6,
+        plotOutput("test_criterion_plot_a7")
+      ), # End of box
+      box(width = 6,
+        plotOutput("test_criterion_plot_a8")
       ) # End of box
+      
      ) # End of column
      ) # End of fluidRow
+      
+    ), # End of tabItem
+    
+    tabItem(tabName = "map",
+            
+      h2("Play Index County Map"),
+      
+      box(width = 12,
+        plotOutput("map", height = "725px")
+      ) # End of box
       
     ) # End of tabItem
     

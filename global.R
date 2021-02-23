@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Dec 2 2020
+# Feb 22 2021
 
 
 # --- Load packages ---------------------------------------
@@ -30,12 +30,13 @@ library(janitor)
 library(QuantPsyc)
 library(EnvStats) # For Outlier detection
 library(bestglm)
+library(urbnmapr)
 
 
 # --- Import Processed data ----------------------------------
 
 load("www/temp_shiny_data.RData")
-load("www/temp_ana_data.RData")
+load("www/temp_ana_data_v2.RData")
 
 # --- Calculate Index Score ----------------------------------
 
@@ -63,3 +64,31 @@ measure_lst <- filter(m_step_df, var_name != "(Intercept)") %>%
 
 measure_top5_lst <- measure_lst[c(1:5)]
 measure_lst <- measure_lst[c(-1:-5)]
+
+# Calculate Index with Fixed Slider values
+fixed_z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
+        ungroup() %>%
+        group_by(var_name) %>%
+        mutate(
+          z_value = as.numeric(scale(value)),
+          score = scales::rescale(z_value, c(0, 100)),
+          score = 100 - score,
+          rank_value = rank(-score),
+          per_rank_value = percent_rank(score) * 100,
+          play = ifelse(!is.na(b), 1, 0)) %>%
+        filter(play == 1) %>%
+        group_by(fips, state, county) %>%
+        mutate(
+          play_uw = mean(score, na.rm = T),
+          play_w = weighted.mean(score, pratt, na.rm = T)
+        ) %>%
+        dplyr::select(-play)
+      
+# Convert back to wide format
+fixed_z_data_1_wgeo <- fixed_z_data_1_wgeo_long %>%
+        dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
+        pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        mutate(
+          score = play_w_percent_fair_or_poor_health) # Use fair and poor health as a proxy
+      
+names(fixed_z_data_1_wgeo) <- str_replace_all(names(fixed_z_data_1_wgeo), "^value_", "")

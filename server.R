@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Dec 5 2020
+# Feb 22 2021
 
 # --- Server ----------------------------------------------
 
@@ -83,7 +83,12 @@ shinyServer(function(input, output, session) {
       # Add physical_inactivity_back
       phy_inactive_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_physically_inactive)
       
-      z_data_1_wgeo <- left_join(z_data_1_wgeo, phy_inactive_wgeo, by = c("fips", "state", "county")) %>%
+      # Add new measure back
+      additional_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_uninsured, primary_care_physicians_rate, percent_unemployed, x20th_percentile_income, percent_single_parent_households, social_association_rate) #violent_crime_rate, severe_housing_cost_burden
+      
+      ccc <<- z_data_1_wgeo
+      
+      z_data_1_wgeo <- left_join(z_data_1_wgeo, phy_inactive_wgeo, by = c("fips", "state", "county")) %>% left_join(additional_wgeo, by = c("fips", "state", "county")) %>%
         ungroup()
       
       names(z_data_1_wgeo) <- str_replace_all(names(z_data_1_wgeo), "^value_", "")
@@ -515,6 +520,138 @@ shinyServer(function(input, output, session) {
       
     })
     
+    # Play index correlation with additoinal measure
+    # % Uninsured (rank), 
+    # Primary Care Physicians Rate (rank),
+    # % Unemployed (rank), 
+    # 20th Percentile Income (rank), 
+    # % Single-Parent Households (rank), 
+    # Severe Housing Cost Burden (rank), 
+    # Violent Crime Rate (rank), and 
+    # Social Association Rate (rank).  Please post the result to the 'Play Index' view
+    
+    output$test_criterion_plot_a1 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$percent_uninsured, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, percent_uninsured)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a2 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$primary_care_physicians_rate, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, primary_care_physicians_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a3 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$percent_unemployed, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, percent_unemployed)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a4 <- renderPlot({
+          
+      data <- z_geo_w_criterion_df()
+      
+      ddd <<- data
+      
+     value <- cor(data$score, data$x20th_percentile_income, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, x20th_percentile_income)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a5 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$percent_single_parent_households, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, percent_single_parent_households)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a6 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$severe_housing_cost_burden, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, severe_housing_cost_burden)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a7 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$violent_crime_rate, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, violent_crime_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a8 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$social_association_rate, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_association_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
     # test scatter grid plot
     output$test_grid_plot <- renderPlot({
       
@@ -665,6 +802,23 @@ shinyServer(function(input, output, session) {
         ) %>%
         formatRound(columns = names(m_step_df)[-1], digits = 2)
     })
-
-
+    
+    # Map
+    output$map <- renderPlot({
+      # see https://urban-institute.medium.com/how-to-create-state-and-county-maps-easily-in-r-577d29300bb2
+    map_data <- left_join(fixed_z_data_1_wgeo, countydata, by = c("fips" = "county_fips")) %>%
+      left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+    
+    ggplot(map_data, aes(long, lat, group = fips, fill = score)) +
+      geom_polygon(color = NA) +
+      coord_map() +
+      labs(fill = "Play Index") +
+      theme_minimal() +
+      scale_fill_continuous(limits = c(0,100), breaks = seq(0, 100, 10)) +
+      guides(fill = guide_colourbar(nbbin = 100)) +
+      theme(legend.position = "bottom",
+            legend.key.width = unit(7, "cm"))
+    
+    })
+    
 })
