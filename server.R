@@ -84,7 +84,7 @@ shinyServer(function(input, output, session) {
       phy_inactive_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_physically_inactive)
       
       # Add new measure back
-      additional_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_uninsured, primary_care_physicians_rate, percent_unemployed, x20th_percentile_income, percent_single_parent_households, social_association_rate) #violent_crime_rate, severe_housing_cost_burden
+      additional_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, percent_uninsured, primary_care_physicians_rate, percent_unemployed, x20th_percentile_income, percent_single_parent_households, social_association_rate) #violent_crime_rate, severe_housing_cost_burden
       
       ccc <<- z_data_1_wgeo
       
@@ -187,7 +187,7 @@ shinyServer(function(input, output, session) {
         value2_5 <- abs(round(value * ((b5 * input$change5)/100), 0))
         
         value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
-    
+
         value2_per = round((value2 / value) * 100, 1)
         
         value3 <- paste0(value2, " (", value2_per, "%)")
@@ -201,7 +201,7 @@ shinyServer(function(input, output, session) {
     
     output$iv_echo <- renderInfoBox({
         
-        value <-   select_geo_df() %>%
+        value <- select_geo_df() %>%
             dplyr::select(input$iv) %>%
             unlist() %>%
             as.numeric()
@@ -685,13 +685,20 @@ shinyServer(function(input, output, session) {
         
         data.check <<- data
         
+        # Change x axis
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          xlabel <- input$iv_top5
+        } else {
+          xlabel <- input$iv
+        }
+        
         # Make plot
         ggplot(data, 
             aes(percent_physically_inactive, score, color = focus)) +
             geom_point(size = 5) +
             geom_label_repel(aes(label = label),
                        color = "black") +
-            labs(y = "Play Index (0 to 100)", x = input$iv) +
+            labs(y = "Play Index (0 to 100)", x = "percent_physically_inactive") +
             theme_minimal() +
             theme(legend.position = "none")
         
