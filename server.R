@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Feb 22 2021
+# Feb 24 2021
 
 # --- Server ----------------------------------------------
 
@@ -49,6 +49,14 @@ shinyServer(function(input, output, session) {
       # Step 2 - Rescale it to 0 to 100
       # Step 3 - Filter to play iv Q: What about the DV?
       # Step 4 - Take the average (both unweighted and weighted using Pratt)
+      
+        # Change value?
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          value_change <- input$change_top5
+        } else {
+          value_change <- input$change
+        }
+      
       z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
         ungroup() %>%
         group_by(var_name) %>%
@@ -677,11 +685,18 @@ shinyServer(function(input, output, session) {
           mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
         }
         
+        # Change x axis
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          xchange <- input$change_top5
+        } else {
+          xchange <- input$change
+        }
+        
         # Modify the data
         data <- mutate(data,
           label = paste0(county, "\n", state),
           label = ifelse(focus == 1, label, NA),
-          percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * input$change)), percent_physically_inactive))
+          percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive))
         
         data.check <<- data
         
@@ -810,7 +825,7 @@ shinyServer(function(input, output, session) {
         formatRound(columns = names(m_step_df)[-1], digits = 2)
     })
     
-    # Map
+    # Map of Play Index Quintiles
     output$map <- renderPlot({
       # see https://urban-institute.medium.com/how-to-create-state-and-county-maps-easily-in-r-577d29300bb2
     map_data <- left_join(fixed_z_data_1_wgeo, countydata, by = c("fips" = "county_fips")) %>%
