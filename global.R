@@ -96,4 +96,4 @@ fixed_z_data_1_wgeo <- fixed_z_data_1_wgeo_long %>%
 names(fixed_z_data_1_wgeo) <- str_replace_all(names(fixed_z_data_1_wgeo), "^value_", "")
 
 # Save fixed play index score into csv
-write_csv(fixed_z_data_1_wgeo, "../Beta/data/play_index_score_all_counties.csv", na = "")
+# write_csv(fixed_z_data_1_wgeo, "../Beta/data/play_index_score_all_counties.csv", na = "")
