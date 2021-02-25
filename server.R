@@ -117,13 +117,15 @@ shinyServer(function(input, output, session) {
     
     # Get weight for iv
     slider_data <- reactive({
-        data <- filter(m_step_df, var_name == input$iv | var_name %in% c(
-           "percent_fair_or_poor_health",
-           "percent_adults_with_obesity",
-           "percent_insufficient_sleep",
-           "percent_smokers",
-           "percent_excessive_drinking"
-        ))
+      
+      data <- filter(m_step_df, var_name == input$iv | var_name == input$iv_top5)
+        # data <- filter(m_step_df, var_name == input$iv | var_name %in% c(
+        #    "percent_fair_or_poor_health",
+        #    "percent_adults_with_obesity",
+        #    "percent_insufficient_sleep",
+        #    "percent_smokers",
+        #    "percent_excessive_drinking"
+        # ))
     })
     
     # Get weight for criterion
@@ -151,7 +153,7 @@ shinyServer(function(input, output, session) {
             as.character()
         
         infoBox(
-          "Population", pop,
+          "County Population", pop,
           fill = TRUE,
           color = "teal"
         )
@@ -226,7 +228,7 @@ shinyServer(function(input, output, session) {
     
     output$iv_change <- renderInfoBox({
         
-        value <-   select_geo_df() %>%
+        value <- select_geo_df() %>%
             dplyr::select(input$iv) %>%
             unlist() %>%
             as.character()
@@ -275,15 +277,66 @@ shinyServer(function(input, output, session) {
     
     output$dv_echo <- renderInfoBox({
         
-        value <-   select_geo_df() %>%
-            dplyr::select(percent_physically_inactive) %>%
-            unlist() %>%
-            as.numeric()
+        # value <- select_geo_df() %>%
+        #     dplyr::select(percent_physically_inactive) %>%
+        #     unlist() %>%
+        #     as.numeric()
+        # 
+        # value <- round(value, 1)
         
-        value <- round(value, 1)
+        # Get data
+        data <- plot_data()
+        
+        dd.check <<- data
+        
+        # Get weight aka slider data
+        slider_data <- slider_data()
+        
+        sd.check <<- slider_data
+        
+        if (nrow(slider_data) == 0) {
+          slider_data <- data.frame(b = 0)
+        }
+        
+        # Make focus generic
+        if (input$iv_top5 != "Select a Measure") {
+        data <- data %>%
+            rename(
+              "top5_iv" = input$iv_top5)  %>%
+          mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$change_top5, top5_iv))
+        }
+        
+        if (input$iv != "Select a Measure") {
+          
+        data <- data %>%
+            rename(
+              "focus_iv" = input$iv) %>%
+          mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+        }
+        
+        # Change x axis
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          xchange <- input$change_top5
+        } else {
+          xchange <- input$change
+        }
+        
+        # Modify the data
+        data <- mutate(data,
+          label = paste0(county, "\n", state),
+          label = ifelse(focus == 1, label, NA),
+          percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive))
+        
+        data <- data %>%
+          filter(state == input$state, county == input$county)
+        
+        check.check2 <<- data
+        
+        value <- round(data$percent_physically_inactive, 1)
         
         infoBox(
-          "percent_physically_inactive", value, 
+          HTML(paste("% of Population",br(), "Physically Inactive")),
+          value, 
           fill = TRUE,
           color = "navy"
         )
@@ -295,11 +348,18 @@ shinyServer(function(input, output, session) {
         # Get weight aka slider data
         slider_data <- slider_data()
         
+        # Change x axis
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          xchange <- input$change_top5
+        } else {
+          xchange <- input$change
+        }
+        
         rank_df <-  ana_data_1_wgeo %>%
             dplyr::select(fips, state, county, percent_physically_inactive) %>%
             mutate(
              focus = ifelse(state == input$state & county == input$county, 1, 0),
-             percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * input$change)), percent_physically_inactive),
+             percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive),
               rank_value = rank(percent_physically_inactive),
               per_rank_value = (1 - percent_rank(percent_physically_inactive)) * 100
             ) %>%
@@ -668,6 +728,10 @@ shinyServer(function(input, output, session) {
         
         # Get weight aka slider data
         slider_data <- slider_data()
+        
+        if (nrow(slider_data) == 0) {
+          slider_data <- data.frame(b = 0)
+        }
         
         # Make focus generic
         if (input$iv_top5 != "Select a Measure") {
