@@ -551,13 +551,13 @@ shinyServer(function(input, output, session) {
          dplyr::select(b) %>% unlist() %>% as.numeric()
         
         
-        value2_0 <- abs(round(value * ((b * input$change)/100), 0))
-        value2_top5 <- abs(round(value * ((b_top5 * input$change_top5)/100), 0))
-        value2_1 <- abs(round(value * ((b1 * input$change1)/100), 0))
-        value2_2 <- abs(round(value * ((b2 * input$change2)/100), 0))
-        value2_3 <- abs(round(value * ((b3 * input$change3)/100), 0))
-        value2_4 <- abs(round(value * ((b4 * input$change4)/100), 0))
-        value2_5 <- abs(round(value * ((b5 * input$change5)/100), 0))
+        value2_0 <- round(value * ((b * input$change)/100), 0)
+        value2_top5 <- round(value * ((b_top5 * input$change_top5)/100), 0)
+        value2_1 <- round(value * ((b1 * input$change1)/100), 0)
+        value2_2 <- round(value * ((b2 * input$change2)/100), 0)
+        value2_3 <- round(value * ((b3 * input$change3)/100), 0)
+        value2_4 <- round(value * ((b4 * input$change4)/100), 0)
+        value2_5 <- round(value * ((b5 * input$change5)/100), 0)
         
         value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
         
