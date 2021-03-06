@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Feb 24 2021
+# Mar 6 2021
 
 
 # --- ui --------------------------------------------------
@@ -19,7 +19,9 @@ sidebar <- dashboardSidebar(
     menuItem("Play Index", icon = icon("bar-chart-o"),
              tabName = "playIndex"),
     menuItem("Map", icon = icon("map-marked"),
-             tabName = "map")
+             tabName = "map"),
+    br(),
+    checkboxInput("extra", "Show Extra Card")
   ) # End of sidebarMenu
   
 ) # End of dashboardSidebar
@@ -49,7 +51,11 @@ body <- dashboardBody(
                     infoBoxOutput("dv_echo", width = 12),
                     infoBoxOutput("dv_rank", width = 12),
                     infoBoxOutput("population", width = 12),
-                    infoBoxOutput("pop_impact", width = 12)
+                    infoBoxOutput("pop_impact", width = 12),
+                    conditionalPanel(
+                        condition = "input.extra == true",
+                         infoBoxOutput("extra_impact_card", width = 12)
+                    )
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
               )
@@ -245,7 +251,19 @@ body <- dashboardBody(
       ), # End of box
       box(width = 6,
         plotOutput("test_criterion_plot_a8")
+      ), # End of box
+      
+      box(width = 6,
+        plotOutput("test_criterion_plot_a9")
+      ), # End of box
+      
+      box(width = 6,
+        plotOutput("test_criterion_plot_a10")
+      ), # End of box
+      box(width = 6,
+        plotOutput("test_criterion_plot_a11")
       ) # End of box
+      
       
      ) # End of column
      ) # End of fluidRow

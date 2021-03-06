@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Feb 24 2021
+# Mar 6 2021
 
 # --- Server ----------------------------------------------
 
@@ -507,6 +507,78 @@ shinyServer(function(input, output, session) {
         )
         
      })
+     
+    # --- Extra Impact Card ---
+    # Optional for some Clients
+     
+    output$extra_impact_card <- renderInfoBox({
+      
+      # annual_avg_emplvl * 166 (from literature per capita cost)
+      
+        data <- select_geo_df()
+        
+        data_try_check <<- data
+        
+        # Join with labour data
+        data <- data %>%
+          left_join(data_labour_1, by = c("fips" = "FIPS"))
+        
+        # Pop change impact repeat here
+        # TODO: move to reactive
+        value <-  select_geo_df() %>%
+            dplyr::select(population) %>%
+            unlist() %>%
+            as.numeric()
+        
+         # slider data
+        slider_data <- slider_data()
+        
+        slider_data.check <<- slider_data
+        
+        b <- filter(slider_data, var_name == input$iv) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b_top5 <- filter(slider_data, var_name == input$iv_top5) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b1 <- filter(slider_data, var_name == "percent_adults_with_obesity") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b2 <- filter(slider_data, var_name == "percent_fair_or_poor_health") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b3 <- filter(slider_data, var_name == "percent_with_access_to_exercise_oppurtunities") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b4 <- filter(slider_data, var_name == "percent_excessive_drinking") %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b5 <- filter(slider_data, var_name == "percent_insufficient_sleep") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        
+        
+        value2_0 <- abs(round(value * ((b * input$change)/100), 0))
+        value2_top5 <- abs(round(value * ((b_top5 * input$change_top5)/100), 0))
+        value2_1 <- abs(round(value * ((b1 * input$change1)/100), 0))
+        value2_2 <- abs(round(value * ((b2 * input$change2)/100), 0))
+        value2_3 <- abs(round(value * ((b3 * input$change3)/100), 0))
+        value2_4 <- abs(round(value * ((b4 * input$change4)/100), 0))
+        value2_5 <- abs(round(value * ((b5 * input$change5)/100), 0))
+        
+        value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
+        
+        print(data$annual_avg_emplvl / value)
+        
+        # estimate % of employee impacted based on proportion of employed population
+        pop_change_value <- (data$annual_avg_emplvl / value) * value2
+        
+        final_value <- (data$annual_avg_emplvl + pop_change_value ) * 166
+        
+        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits=1))
+        
+        infoBox(
+          HTML(paste("Physical Inactivity", br(), "Cost to Employer")),
+          final_value, 
+          fill = TRUE,
+          color = "olive"
+        )
+      
+      
+    })
 
         
     
@@ -713,6 +785,55 @@ shinyServer(function(input, output, session) {
             method = "pearson", use = "complete.obs")
       
       ggplot(data, aes(score, social_association_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a9 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+     value <- cor(data$score, data$percent_adults_with_diabetes, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, percent_adults_with_diabetes)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a10 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+     value <- cor(data$score, data$medicare_spending_age_sex_race_adjusted_4, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_age_sex_race_adjusted_4)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a11 <- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+     value <- cor(data$score, data$medicare_spending_price_age_sex_race_adjusted_5, 
+            method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_price_age_sex_race_adjusted_5)) +
         geom_point() +
         geom_smooth() +
         labs(title = paste0("Correlation r = ", round(value, 2))) +
