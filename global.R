@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Mar 6 2021
+# Mar 14 2021
 
 
 # --- Load packages ---------------------------------------
@@ -40,6 +40,9 @@ load("www/temp_ana_data_v2.RData")
 load("www/temp_extra_data.RData")
 load("www/temp_ana_data_extra_measure.RData")
 
+# For each additional Index, load the regression model table
+load("www/m_step_df_home.RData")
+
 # --- Calculate Index Score ----------------------------------
 
 # Pivot to long format for easy standardization
@@ -56,9 +59,15 @@ ana_data_1_criterion <- ana_data_1_wgeo %>%
          percent_adults_with_diabetes)
 
 # Join with step-wise full table to get the weight
+home_ana_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
+  left_join(m_step_df_home, by = "var_name")
+
+# Join with step-wise full table to get the weight
 ana_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
   left_join(m_step_df, by = "var_name")
 
+
+# Measure lst for Play Index
 measure_lst <- filter(m_step_df, var_name != "(Intercept)") %>%
   arrange(desc(pratt)) %>%
   dplyr::select(var_name) %>%
@@ -67,6 +76,16 @@ measure_lst <- filter(m_step_df, var_name != "(Intercept)") %>%
 
 measure_top5_lst <- measure_lst[c(1:5)]
 measure_lst <- measure_lst[c(-1:-5)]
+
+# Measure lst for Home Index
+measure_lst_home <- filter(m_step_df_home, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+measure_top5_lst_home <- measure_lst_home[c(1:5)]
+measure_lst_home <- measure_lst_home[c(-1:-5)]
 
 # Calculate Index with Fixed Slider values
 fixed_z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%

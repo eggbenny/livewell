@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Mar 6 2021
+# Mar 15 2021
 
 # --- Server ----------------------------------------------
 
@@ -28,6 +28,24 @@ shinyServer(function(input, output, session) {
 
     })
   
+    observe({
+      
+      if (input$home_iv_top5 != "Select a Measure") {
+        shinyjs::disable("home_change")
+        shinyjs::enable("home_change_top5")
+        updateSliderInput(session, "home_change", value = 0)
+        updateSelectizeInput(session, "home_iv", selected = "Select a Measure")
+      }
+      
+      if (input$home_iv != "Select a Measure") {
+        shinyjs::disable("home_change_top5")
+        shinyjs::enable("home_change")
+        updateSliderInput(session, "home_change_top5", value = 0)
+        updateSelectizeInput(session, "home_iv_top5", selected = "Select a Measure")
+      } 
+
+    })
+  
     # Update county filter based on state
     observe({
         
@@ -35,6 +53,17 @@ shinyServer(function(input, output, session) {
       county_lst <- sort(unique(data$county))
       
       updateSelectizeInput(session, "county",
+        choices = county_lst
+      )
+        
+    })
+    
+    observe({
+        
+      data <- filter(ana_data_1_wgeo, state == input$home_state)  
+      county_lst <- sort(unique(data$county))
+      
+      updateSelectizeInput(session, "home_county",
         choices = county_lst
       )
         
@@ -106,12 +135,86 @@ shinyServer(function(input, output, session) {
       return(z_data_1_wgeo)
       
     })
+    
+    home_z_geo_df <- reactive({
+      # Calculate play index
+      # Step 1 - Convert all metric to z score
+      # Step 2 - Rescale it to 0 to 100
+      # Step 3 - Filter to play iv Q: What about the DV?
+      # Step 4 - Take the average (both unweighted and weighted using Pratt)
+      
+        # Change value?
+        if(input$home_iv_top5 != "Select a Measure" & input$home_iv == "Select a Measure") {
+          value_change <- input$home_change_top5
+        } else {
+          value_change <- input$home_change
+        }
+      
+      home_z_data_1_wgeo_long <- home_ana_data_1_wgeo_long %>%
+        ungroup() %>%
+        group_by(var_name) %>%
+        mutate(
+          focus = ifelse(state == input$home_state & county == input$home_county, 1, 0),
+          value = ifelse(focus == 1 & var_name == input$home_iv_top5, value + input$homee_change_top5, value),
+          value = ifelse(focus == 1 & var_name == input$home_iv, value + input$home_change, value),
+          # value = ifelse(focus == 1 & var_name == "percent_fair_or_poor_health", value + input$change1, value),
+          # value = ifelse(focus == 1 & var_name == "percent_adults_with_obesity", value + input$change2, value),
+          # value = ifelse(focus == 1 & var_name == "percent_insufficient_sleep", value + input$change3, value),
+          # value = ifelse(focus == 1 & var_name == "percent_smokers", value + input$change4, value),
+          # value = ifelse(focus == 1 & var_name == "percent_excessive_drinking", value + input$change5, value),
+          z_value = as.numeric(scale(value)),
+          score = scales::rescale(z_value, c(0, 100)),
+          score = 100 - score,
+          play = ifelse(!is.na(b), 1, 0)) %>%
+        filter(play == 1) %>%
+        group_by(fips, state, county) %>%
+        mutate(
+          play_uw = mean(score, na.rm = T),
+          play_w = weighted.mean(score, pratt, na.rm = T)
+        ) %>%
+        dplyr::select(-play)
+      
+      # Convert back to wide format
+      home_z_data_1_wgeo <- home_z_data_1_wgeo_long %>%
+        dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
+        pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        mutate(
+          score = play_w_percent_fair_or_poor_health) # Use fair and poor health as a proxy
+      
+      # Add per_insufficient_sleep back
+      per_insufficient_sleep_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_insufficient_sleep)
+      
+      # Add new measure back
+      additional_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, primary_care_physicians_rate) #violent_crime_rate, severe_housing_cost_burden x20th_percentile_income percent_uninsured percent_single_parent_households percent_unemployed social_association_rate
+      
+      # ccc <<- z_data_1_wgeo
+      
+      # home_z_data_1_wgeo <- left_join(home_z_data_1_wgeo, additional_wgeo, by = c("fips", "state", "county")) %>%
+      #   ungroup()
+      
+      home_z_data_1_wgeo <- left_join(home_z_data_1_wgeo, per_insufficient_sleep_wgeo, by = c("fips", "state", "county")) %>% left_join(additional_wgeo, by = c("fips", "state", "county")) %>%
+        ungroup()
+      
+      names(home_z_data_1_wgeo) <- str_replace_all(names(home_z_data_1_wgeo), "^value_", "")
+      
+      home.data.check <<- home_z_data_1_wgeo
+      
+      return(home_z_data_1_wgeo)
+      
+    })
   
     # Create data subset
     select_geo_df <- reactive({
         data <- filter(z_geo_df(), state == input$state, county == input$county)
         
         data.check <<- data
+        return(data)
+    })
+    
+    home_select_geo_df <- reactive({
+        data <- filter(home_z_geo_df(), state == input$home_state, county == input$home_county)
+        
+        # data.check <<- data
         return(data)
     })
     
@@ -128,6 +231,19 @@ shinyServer(function(input, output, session) {
         # ))
     })
     
+    home_slider_data <- reactive({
+      
+      data <- filter(m_step_df_home, var_name == input$home_iv | var_name == input$home_iv_top5)
+        # data <- filter(m_step_df, var_name == input$iv | var_name %in% c(
+        #    "percent_fair_or_poor_health",
+        #    "percent_adults_with_obesity",
+        #    "percent_insufficient_sleep",
+        #    "percent_smokers",
+        #    "percent_excessive_drinking"
+        # ))
+    })
+    
+    
     # Get weight for criterion
     criterion_slider_data <- reactive({
          # years_of_potential_life_lost_rate,
@@ -141,6 +257,13 @@ shinyServer(function(input, output, session) {
         data <- filter(z_geo_df(), state == input$state)
         data <- mutate(data, 
           focus = ifelse(state == input$state & county == input$county, 1, 0))
+        return(data)
+    })
+    
+    home_plot_data <- reactive({
+        data <- filter(home_z_geo_df(), state == input$home_state)
+        data <- mutate(data, 
+          focus = ifelse(state == input$home_state & county == input$home_county, 1, 0))
         return(data)
     })
     
@@ -159,6 +282,22 @@ shinyServer(function(input, output, session) {
         )
         
     })
+    
+    output$home_population <- renderInfoBox({
+        
+        pop <- home_select_geo_df() %>%
+           dplyr::select(population) %>%
+            unlist() %>%
+            as.character()
+        
+        infoBox(
+          "County Population", pop,
+          fill = TRUE,
+          color = "teal"
+        )
+        
+    })
+    
     
     output$pop_impact <- renderInfoBox({
         
@@ -195,6 +334,53 @@ shinyServer(function(input, output, session) {
         value2_3 <- abs(round(value * ((b3 * input$change3)/100), 0))
         value2_4 <- abs(round(value * ((b4 * input$change4)/100), 0))
         value2_5 <- abs(round(value * ((b5 * input$change5)/100), 0))
+        
+        value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
+
+        value2_per = round((value2 / value) * 100, 1)
+        
+        value3 <- paste0(value2, " (", value2_per, "%)")
+        
+        infoBox(
+          "Est' Population Impacted", value3, 
+          fill = TRUE,
+          color = "teal"
+        )
+    })
+    
+    output$home_pop_impact <- renderInfoBox({
+        
+        value <-  home_select_geo_df() %>%
+            dplyr::select(population) %>%
+            unlist() %>%
+            as.numeric()
+        
+         # slider data
+        slider_data <- home_slider_data()
+        
+        b <- filter(slider_data, var_name == input$home_iv) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b_top5 <- filter(slider_data, var_name == input$home_iv_top5) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b1 <- filter(slider_data, var_name == "average_number_of_mentally_unhealthy_days") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b2 <- filter(slider_data, var_name == "percent_smokers") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b3 <- filter(slider_data, var_name == "percent_black") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b4 <- filter(slider_data, var_name == "average_daily_pm2_5") %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b5 <- filter(slider_data, var_name == "percent_non_hispanic_white") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        
+        
+        value2_0 <- abs(round(value * ((b * input$home_change)/100), 0))
+        value2_top5 <- abs(round(value * ((b_top5 * input$home_change_top5)/100), 0))
+        value2_1 <- abs(round(value * ((b1 * input$home_change1)/100), 0))
+        value2_2 <- abs(round(value * ((b2 * input$home_change2)/100), 0))
+        value2_3 <- abs(round(value * ((b3 * input$home_change3)/100), 0))
+        value2_4 <- abs(round(value * ((b4 * input$home_change4)/100), 0))
+        value2_5 <- abs(round(value * ((b5 * input$home_change5)/100), 0))
         
         value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
 
@@ -343,6 +529,61 @@ shinyServer(function(input, output, session) {
         
     })
     
+    output$home_dv_echo <- renderInfoBox({
+        
+        # Get data
+        data <- home_plot_data()
+        
+        # Get weight aka slider data
+        slider_data <- home_slider_data()
+        
+        if (nrow(slider_data) == 0) {
+          slider_data <- data.frame(b = 0)
+        }
+        
+        # Make focus generic
+        if (input$home_iv_top5 != "Select a Measure") {
+        data <- data %>%
+            rename(
+              "top5_iv" = input$home_iv_top5)  %>%
+          mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$home_change_top5, top5_iv))
+        }
+        
+        if (input$home_iv != "Select a Measure") {
+          
+        data <- data %>%
+            rename(
+              "focus_iv" = input$home_iv) %>%
+          mutate(focus_iv = ifelse(focus == 1, focus_iv + input$home_change, focus_iv))
+        }
+        
+        # Change x axis
+        if(input$home_iv_top5 != "Select a Measure" & input$home_iv == "Select a Measure") {
+          xchange <- input$home_change_top5
+        } else {
+          xchange <- input$home_change
+        }
+        
+        # Modify the data
+        data <- mutate(data,
+          label = paste0(county, "\n", state),
+          label = ifelse(focus == 1, label, NA),
+          percent_insufficient_sleep = ifelse(focus == 1, (percent_insufficient_sleep + (slider_data$b * xchange)), percent_insufficient_sleep))
+        
+        data <- data %>%
+          filter(state == input$home_state, county == input$home_county)
+        
+        value <- round(data$percent_insufficient_sleep, 1)
+        
+        infoBox(
+          HTML(paste("% of Population", br(), "with Insufficient Sleep")),
+          value, 
+          fill = TRUE,
+          color = "navy"
+        )
+        
+    })
+    
     output$dv_rank <- renderInfoBox({
       
         # Get weight aka slider data
@@ -385,8 +626,51 @@ shinyServer(function(input, output, session) {
         )   
         
     })
+    
+    output$home_dv_rank <- renderInfoBox({
+      
+        # Get weight aka slider data
+        slider_data <- home_slider_data()
         
-     output$index_echo <- renderInfoBox({
+        # Change x axis
+        if(input$home_iv_top5 != "Select a Measure" & input$home_iv == "Select a Measure") {
+          xchange <- input$home_change_top5
+        } else {
+          xchange <- input$home_change
+        }
+        
+        rank_df <-  ana_data_1_wgeo %>%
+            dplyr::select(fips, state, county, percent_insufficient_sleep) %>%
+            mutate(
+             focus = ifelse(state == input$home_state & county == input$home_county, 1, 0),
+             percent_insufficient_sleep = ifelse(focus == 1, (percent_insufficient_sleep + (slider_data$b * xchange)), percent_insufficient_sleep),
+              rank_value = rank(percent_insufficient_sleep),
+              per_rank_value = (1 - percent_rank(percent_insufficient_sleep)) * 100
+            ) %>%
+            dplyr::filter(state == input$home_state, county == input$home_county)
+        
+        rank_value <- rank_df %>%
+            dplyr::select(rank_value) %>%
+            unlist() %>%
+            as.numeric()
+    
+        per_rank_value <- rank_df %>%
+            dplyr::select(per_rank_value) %>%
+            unlist() %>%
+            as.numeric() %>%
+            round(1)
+        
+        rank_value_2 <- paste(rank_value, " (", per_rank_value, "th)")
+            
+        infoBox(
+          "National Rank (Percentile)", rank_value_2, 
+          fill = TRUE,
+          color = "navy"
+        )   
+        
+    })
+        
+      output$index_echo <- renderInfoBox({
         
         value <- select_geo_df() %>%
             dplyr::select(score) %>%
@@ -402,6 +686,23 @@ shinyServer(function(input, output, session) {
         )
         
      })
+      
+      output$home_index_echo <- renderInfoBox({
+        
+        value <- home_select_geo_df() %>%
+            dplyr::select(score) %>%
+            unlist() %>%
+            as.numeric()
+        
+        value <- round(value, 1)
+        
+        infoBox(
+          "Home Index", value, 
+          fill = TRUE,
+          color = "blue"
+        )
+        
+     })
         
       output$index_rank <- renderInfoBox({
         
@@ -412,6 +713,36 @@ shinyServer(function(input, output, session) {
               per_rank_value = percent_rank(score) * 100
             ) %>%
             dplyr::filter(state == input$state, county == input$county)
+        
+        rank_value <- rank_df %>%
+            dplyr::select(rank_value) %>%
+            unlist() %>%
+            as.numeric()
+    
+        per_rank_value <- rank_df %>%
+            dplyr::select(per_rank_value) %>%
+            unlist() %>%
+            as.numeric() %>%
+            round(1)
+        
+        rank_value_2 <- paste(rank_value, " (", per_rank_value, "th)")
+            
+        infoBox(
+          "National Rank (Percentile)", rank_value_2, 
+          fill = TRUE,
+          color = "blue"
+        )   
+      })
+      
+      output$home_index_rank <- renderInfoBox({
+        
+        rank_df <- home_z_geo_df() %>%
+            dplyr::select(fips, state, county, score) %>%
+            mutate(
+              rank_value = rank(-score),
+              per_rank_value = percent_rank(score) * 100
+            ) %>%
+            dplyr::filter(state == input$home_state, county == input$home_county)
         
         rank_value <- rank_df %>%
             dplyr::select(rank_value) %>%
@@ -511,7 +842,7 @@ shinyServer(function(input, output, session) {
     # --- Extra Impact Card ---
     # Optional for some Clients
      
-    output$extra_impact_card <- renderInfoBox({
+    output$play_extra_impact_card <- renderInfoBox({
       
       # annual_avg_emplvl * 166 (from literature per capita cost)
       
@@ -562,7 +893,7 @@ shinyServer(function(input, output, session) {
         value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
         
         print(data$annual_avg_emplvl / value)
-        
+         
         # estimate % of employee impacted based on proportion of employed population
         pop_change_value <- (data$annual_avg_emplvl / value) * value2
         
@@ -572,6 +903,76 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste("Physical Inactivity", br(), "Cost to Employer")),
+          final_value, 
+          fill = TRUE,
+          color = "olive"
+        )
+      
+      
+    })
+    
+    
+    output$home_extra_impact_card <- renderInfoBox({
+      
+      # Companies lose an estimated $2,280 per employee each year due to sleep deprivation
+      
+        data <- home_select_geo_df()
+        
+        # data_try_check <<- data
+        
+        # Join with labour data
+        data <- data %>%
+          left_join(data_labour_1, by = c("fips" = "FIPS"))
+        
+        # Pop change impact repeat here
+        # TODO: move to reactive
+        value <-  home_select_geo_df() %>%
+            dplyr::select(population) %>%
+            unlist() %>%
+            as.numeric()
+        
+         # slider data
+        slider_data <- home_slider_data()
+        
+        # slider_data.check <<- slider_data
+        
+        b <- filter(slider_data, var_name == input$home_iv) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b_top5 <- filter(slider_data, var_name == input$home_iv_top5) %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b1 <- filter(slider_data, var_name == "average_number_of_mentally_unhealthy_days") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b2 <- filter(slider_data, var_name == "percent_smokers") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b3 <- filter(slider_data, var_name == "percent_black") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        b4 <- filter(slider_data, var_name == "average_daily_pm2_5") %>%
+          dplyr::select(b) %>% unlist() %>% as.numeric()
+        b5 <- filter(slider_data, var_name == "percent_non_hispanic_white") %>%
+         dplyr::select(b) %>% unlist() %>% as.numeric()
+        
+        
+        value2_0 <- abs(round(value * ((b * input$home_change)/100), 0))
+        value2_top5 <- abs(round(value * ((b_top5 * input$home_change_top5)/100), 0))
+        value2_1 <- abs(round(value * ((b1 * input$home_change1)/100), 0))
+        value2_2 <- abs(round(value * ((b2 * input$home_change2)/100), 0))
+        value2_3 <- abs(round(value * ((b3 * input$home_change3)/100), 0))
+        value2_4 <- abs(round(value * ((b4 * input$home_change4)/100), 0))
+        value2_5 <- abs(round(value * ((b5 * input$home_change5)/100), 0))
+        
+        value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
+        
+        print(data$annual_avg_emplvl / value)
+        
+        # estimate % of employee impacted based on proportion of employed population
+        pop_change_value <- (data$annual_avg_emplvl / value) * value2
+        
+        final_value <- (data$annual_avg_emplvl + pop_change_value ) * 2280 
+        
+        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits=1))
+        
+        infoBox(
+          HTML(paste("Insufficient Sleep", br(), "Cost")),
           final_value, 
           fill = TRUE,
           color = "olive"
@@ -841,8 +1242,8 @@ shinyServer(function(input, output, session) {
       
     })
     
-    # test scatter grid plot
-    output$test_grid_plot <- renderPlot({
+    # Play index scatter grid plot
+    output$play_grid_plot <- renderPlot({
       
         # Get data
         data <- plot_data()
@@ -904,16 +1305,92 @@ shinyServer(function(input, output, session) {
         
     })
     
+    # Home index scatter grid plot
+    output$home_grid_plot <- renderPlot({
+      
+        # Get data
+        data <- home_plot_data()
+        
+        # Get weight aka slider data
+        slider_data <- home_slider_data()
+        
+        if (nrow(slider_data) == 0) {
+          slider_data <- data.frame(b = 0)
+        }
+        
+        # Make focus generic
+        if (input$home_iv_top5 != "Select a Measure") {
+        data <- data %>%
+            rename(
+              "top5_iv" = input$home_iv_top5)  %>%
+          mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$home_change_top5, top5_iv))
+        }
+        
+        if (input$iv != "Select a Measure") {
+          
+        data <- data %>%
+            rename(
+              "focus_iv" = input$home_iv) %>%
+          mutate(focus_iv = ifelse(focus == 1, focus_iv + input$home_change, focus_iv))
+        }
+        
+        # Change x axis
+        if(input$home_iv_top5 != "Select a Measure" & input$home_iv == "Select a Measure") {
+          xchange <- input$home_change_top5
+        } else {
+          xchange <- input$home_change
+        }
+        
+        # Modify the data
+        data <- mutate(data,
+          label = paste0(county, "\n", state),
+          label = ifelse(focus == 1, label, NA),
+          percent_insufficient_sleep = ifelse(focus == 1, (percent_insufficient_sleep + (slider_data$b * xchange)), percent_insufficient_sleep))
+        
+        home.data.plot.check <<- data
+        
+        # Change x axis
+        if(input$home_iv_top5 != "Select a Measure" & input$home_iv == "Select a Measure") {
+          xlabel <- input$home_iv_top5
+        } else {
+          xlabel <- input$home_iv
+        }
+        
+        # Make plot
+        ggplot(data, 
+            aes(percent_insufficient_sleep, score, color = focus)) +
+            geom_point(size = 5) +
+            geom_label_repel(aes(label = label),
+                       color = "black") +
+            labs(y = "Home Index (0 to 100)", x = "percent_insufficient_sleep") +
+            theme_minimal() +
+            theme(legend.position = "none")
+        
+    })
+    
+    
     # --- Test Table ---
     
-    output$test_table <- DT::renderDataTable({
+    output$play_model_table <- DT::renderDataTable({
        datatable(m_step_df,
          options = list(
+             order = list(3, 'desc'),
              paging =TRUE,
              pageLength = 50
           )         
         ) %>%
         formatRound(columns = names(m_step_df)[-1], digits = 2)
+    })
+    
+    output$home_model_table <- DT::renderDataTable({
+       datatable(m_step_df_home,
+         options = list(
+             order = list(3, 'desc'),
+             paging =TRUE,
+             pageLength = 50
+          )         
+        ) %>%
+        formatRound(columns = names(m_step_df_home)[-1], digits = 2)
     })
     
     # --- IV Contribution ---

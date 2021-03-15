@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Mar 6 2021
+# Mar 15 2021
 
 
 # --- ui --------------------------------------------------
@@ -11,11 +11,16 @@ header <- dashboardHeader(title = "LiveWell Prototype Demo")
 sidebar <- dashboardSidebar(
     
   sidebarMenu(
-    menuItem("Dashboard", tabName = "dashboard", 
+    menuItem("Play Dashboard", tabName = "dashboard", 
              icon = icon("dashboard"),
              badgeLabel = "Demo", badgeColor = "green"),
-    menuItem("Data Table", icon = icon("th"),
-             tabName = "dataTable"),
+    menuItem("Home Dashboard", tabName = "dashboard_home", 
+             icon = icon("dashboard"),
+             badgeLabel = "Demo", badgeColor = "green"),
+    menuItem("Play Model Table", icon = icon("th"),
+             tabName = "playModelTable"),
+    menuItem("Home Model Table", icon = icon("th"),
+             tabName = "homeModelTable"),
     menuItem("Play Index", icon = icon("bar-chart-o"),
              tabName = "playIndex"),
     menuItem("Map", icon = icon("map-marked"),
@@ -54,7 +59,7 @@ body <- dashboardBody(
                     infoBoxOutput("pop_impact", width = 12),
                     conditionalPanel(
                         condition = "input.extra == true",
-                         infoBoxOutput("extra_impact_card", width = 12)
+                         infoBoxOutput("play_extra_impact_card", width = 12)
                     )
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
@@ -96,7 +101,7 @@ body <- dashboardBody(
       # ), # End of box
     column(width = 6,   
       box(width = 12,  
-          plotOutput("test_grid_plot")
+          plotOutput("play_grid_plot")
      ) # End of box
     ),
       
@@ -170,13 +175,115 @@ body <- dashboardBody(
       ) # End of fluidRow
       
      ), # End of tabItem
+    
 
-    tabItem(tabName = "dataTable",
+ tabItem(tabName = "dashboard_home",
+      
+      h3("Dashboard"),
+      
+      fluidRow(
+        
+        tabBox(
+          width = 3,
+           title = "Impact",
+           # The id lets us use input$tabset1 on the server to find the current tab
+           id = "tabset1_home", 
+           tabPanel("Key Measures",
+              fluidRow(
+                    infoBoxOutput("home_index_echo", width = 12),
+                    infoBoxOutput("home_index_rank", width = 12),
+                    infoBoxOutput("home_dv_echo", width = 12),
+                    infoBoxOutput("home_dv_rank", width = 12),
+                    infoBoxOutput("home_population", width = 12),
+                    infoBoxOutput("home_pop_impact", width = 12),
+                    conditionalPanel(
+                        condition = "input.extra == true",
+                         infoBoxOutput("home_extra_impact_card", width = 12)
+                    )
+                    # infoBoxOutput("iv_echo", width = 12),
+                    # infoBoxOutput("iv_rank", width = 12)  
+              )
+            )
+           
+          # tabPanel("Criteria Measures",
+          #   fluidRow(
+          #     column(width = 12,
+          #     h4("Correlation with: "),
+          #           infoBoxOutput("criterion1_card", width = 12),
+          #           infoBoxOutput("criterion2_card", width = 12),
+          #           infoBoxOutput("criterion3_card", width = 12),
+          #           infoBoxOutput("criterion4_card", width = 12)
+          #     )
+          #   )
+          #  )
+        ),
+        
+    column(width = 6,   
+      box(width = 12,  
+          plotOutput("home_grid_plot")
+     ) # End of box
+    ),
+      
+      column(width = 3,
+          
+        box(width = 12,
+          column(width = 6,
+          selectizeInput("home_state", "Select a state",
+            choices = sort(unique(ana_data_1_wgeo$state)),
+            selected = "North Carolina")
+          ),
+          
+          column(width = 6,
+          selectizeInput("home_county", "Select a county",
+            choices = sort(unique(ana_data_1_wgeo$county)),
+            selected = "Richmond")
+          ),
+          
+         column(width = 12,
+          selectizeInput("home_iv_top5", "Select a measure",
+            choices = c("Select a Measure", measure_top5_lst_home),
+            selected = measure_top5_lst_home[1]),
             
-      h2("Weight (b) table from Stepwise Regression"),
+          sliderInput("home_change_top5",
+            "If I change the selected top 5 measure by 1% ... ",
+            min = -20,
+            max = 20,
+            value = 0)
+          ),
+          
+          column(width = 12,
+            selectizeInput("home_iv", "Select a measure",
+              choices = c("Select a Measure", measure_lst_home),
+              selected = "Select a Measure"),
+            sliderInput("home_change",
+              "If I change the selected measure by 1% ... ",
+              min = -20,
+              max = 20,
+              value = 0)
+            ) # End of column
+        ) # End of box
+      ) # End of column
+      ) # End of fluidRow
+      
+     ), # End of tabItem    
+
+
+    tabItem(tabName = "playModelTable",
+            
+      h2("Play Index - Weight (b) table from Stepwise Regression"),
       
       box(width = 12,
-        DT::dataTableOutput("test_table")
+        DT::dataTableOutput("play_model_table")
+      ) # End of box
+      
+    ), # End of tabItem
+ 
+    tabItem(tabName = "homeModelTable",
+            
+      h2("Home Index - Weight (b) table from Stepwise Regression"),
+      
+      box(width = 12,
+        DT::dataTableOutput("home_model_table")
       ) # End of box
       
     ), # End of tabItem
