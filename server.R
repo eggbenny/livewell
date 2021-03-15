@@ -155,7 +155,7 @@ shinyServer(function(input, output, session) {
         group_by(var_name) %>%
         mutate(
           focus = ifelse(state == input$home_state & county == input$home_county, 1, 0),
-          value = ifelse(focus == 1 & var_name == input$home_iv_top5, value + input$homee_change_top5, value),
+          value = ifelse(focus == 1 & var_name == input$home_iv_top5, value + input$home_change_top5, value),
           value = ifelse(focus == 1 & var_name == input$home_iv, value + input$home_change, value),
           # value = ifelse(focus == 1 & var_name == "percent_fair_or_poor_health", value + input$change1, value),
           # value = ifelse(focus == 1 & var_name == "percent_adults_with_obesity", value + input$change2, value),
