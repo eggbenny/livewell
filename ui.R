@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Mar 15 2021
+# Mar 21 2021
 
 
 # --- ui --------------------------------------------------
@@ -14,13 +14,13 @@ sidebar <- dashboardSidebar(
     menuItem("Play Dashboard", tabName = "dashboard", 
              icon = icon("dashboard"),
              badgeLabel = "Demo", badgeColor = "green"),
-    menuItem("Home Dashboard", tabName = "dashboard_home", 
+    menuItem("Rest Dashboard", tabName = "dashboard_rest", 
              icon = icon("dashboard"),
              badgeLabel = "Demo", badgeColor = "green"),
     menuItem("Play Model Table", icon = icon("th"),
              tabName = "playModelTable"),
-    menuItem("Home Model Table", icon = icon("th"),
-             tabName = "homeModelTable"),
+    menuItem("Rest Model Table", icon = icon("th"),
+             tabName = "restModelTable"),
     menuItem("Play Index", icon = icon("bar-chart-o"),
              tabName = "playIndex"),
     menuItem("Map", icon = icon("map-marked"),
@@ -120,6 +120,11 @@ body <- dashboardBody(
             selected = "Richmond")
           ),
           
+          column(width = 6,
+          selectizeInput("region", "Group by Region",
+            choices = c("--", sort(unique(ana_data_1_wgeo$RegionOrg))))
+          ),
+          
           # column(width = 12,
           #  sliderInput("change1",
           #   "If I change % fair or poor health by 1% ... ",
@@ -150,8 +155,13 @@ body <- dashboardBody(
           
          column(width = 12,
           selectizeInput("iv_top5", "Select a measure",
-            choices = c("Select a Measure", measure_top5_lst),
-            selected = measure_top5_lst[1]),
+            choices = c("Select a Measure" = "Select a Measure", 
+                        "% Fair or Poor Health" = "percent_fair_or_poor_health",
+                        "% of Obese Adults" = "percent_adults_with_obesity",
+                        "% of Adults with Insufficient Sleep" = "percent_insufficient_sleep",
+                        "% of Smoking Adults" = "percent_smokers",
+                        "% of Excessive Drinking Adults" = "percent_excessive_drinking"),
+            selected = "% Fair or Poor Health"),
             
           sliderInput("change_top5",
             "If I change the selected top 5 measure by 1% ... ",
@@ -161,8 +171,11 @@ body <- dashboardBody(
           ),
           
           column(width = 12,
+            selectizeInput("iv_domain", "Filter by Top N / Domain",
+              choices = c("Top N", domain_lst),
+              selected = "Top N"),
             selectizeInput("iv", "Select a measure",
-              choices = c("Select a Measure", measure_lst),
+              choices = c("Select a Measure", measure_lst_play),
               selected = "Select a Measure"),
             sliderInput("change",
               "If I change the selected measure by 1% ... ",
@@ -177,7 +190,7 @@ body <- dashboardBody(
      ), # End of tabItem
     
 
- tabItem(tabName = "dashboard_home",
+ tabItem(tabName = "dashboard_rest",
       
       h3("Dashboard"),
       
@@ -187,18 +200,18 @@ body <- dashboardBody(
           width = 3,
            title = "Impact",
            # The id lets us use input$tabset1 on the server to find the current tab
-           id = "tabset1_home", 
+           id = "tabset1_rest", 
            tabPanel("Key Measures",
               fluidRow(
-                    infoBoxOutput("home_index_echo", width = 12),
-                    infoBoxOutput("home_index_rank", width = 12),
-                    infoBoxOutput("home_dv_echo", width = 12),
-                    infoBoxOutput("home_dv_rank", width = 12),
-                    infoBoxOutput("home_population", width = 12),
-                    infoBoxOutput("home_pop_impact", width = 12),
+                    infoBoxOutput("rest_index_echo", width = 12),
+                    infoBoxOutput("rest_index_rank", width = 12),
+                    infoBoxOutput("rest_dv_echo", width = 12),
+                    infoBoxOutput("rest_dv_rank", width = 12),
+                    infoBoxOutput("rest_population", width = 12),
+                    infoBoxOutput("rest_pop_impact", width = 12),
                     conditionalPanel(
                         condition = "input.extra == true",
-                         infoBoxOutput("home_extra_impact_card", width = 12)
+                         infoBoxOutput("rest_extra_impact_card", width = 12)
                     )
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
@@ -220,7 +233,7 @@ body <- dashboardBody(
         
     column(width = 6,   
       box(width = 12,  
-          plotOutput("home_grid_plot")
+          plotOutput("rest_grid_plot")
      ) # End of box
     ),
       
@@ -228,23 +241,28 @@ body <- dashboardBody(
           
         box(width = 12,
           column(width = 6,
-          selectizeInput("home_state", "Select a state",
+          selectizeInput("rest_state", "Select a state",
             choices = sort(unique(ana_data_1_wgeo$state)),
             selected = "North Carolina")
           ),
           
           column(width = 6,
-          selectizeInput("home_county", "Select a county",
+          selectizeInput("rest_county", "Select a county",
             choices = sort(unique(ana_data_1_wgeo$county)),
             selected = "Richmond")
           ),
           
          column(width = 12,
-          selectizeInput("home_iv_top5", "Select a measure",
-            choices = c("Select a Measure", measure_top5_lst_home),
-            selected = measure_top5_lst_home[1]),
+          selectizeInput("rest_iv_top5", "Select a measure",
+            choices = c("Select a Measure",
+                        "Avg. # of Mentally Unhealthy Days" = "average_number_of_mentally_unhealthy_days",
+                        "% of Smoking Adults" = "percent_smokers",
+                        "Air Pollution" = "average_daily_pm2_5",
+                        "% Physically Inactive" = "percent_physically_inactive",
+                        "% Umemployed" = "percent_unemployed"),
+            selected = "Avg. # of Mentally Unhealthy Days"),
             
-          sliderInput("home_change_top5",
+          sliderInput("rest_change_top5",
             "If I change the selected top 5 measure by 1% ... ",
             min = -20,
             max = 20,
@@ -252,10 +270,10 @@ body <- dashboardBody(
           ),
           
           column(width = 12,
-            selectizeInput("home_iv", "Select a measure",
-              choices = c("Select a Measure", measure_lst_home),
+            selectizeInput("rest_iv", "Select a measure",
+              choices = c("Select a Measure", measure_lst_rest),
               selected = "Select a Measure"),
-            sliderInput("home_change",
+            sliderInput("rest_change",
               "If I change the selected measure by 1% ... ",
               min = -20,
               max = 20,
@@ -270,20 +288,31 @@ body <- dashboardBody(
 
     tabItem(tabName = "playModelTable",
             
-      h2("Play Index - Weight (b) table from Stepwise Regression"),
-      
-      box(width = 12,
-        DT::dataTableOutput("play_model_table")
-      ) # End of box
+        tabBox(
+          side = "left", height = "900px", width = 12,
+          selected = "Play",
+          tabPanel("Play",
+            h2("Play Index - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("play_model_table")
+            ) # End of box)
+          ), # End of tabPanel
+          tabPanel("Fair or Poor Health",
+            h2("Fair or Poor Health - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("fp_health_model_table")
+            ) # End of box        
+          )  # End of tabPanel
+        ) # End of tabBox
       
     ), # End of tabItem
  
-    tabItem(tabName = "homeModelTable",
+    tabItem(tabName = "restModelTable",
             
-      h2("Home Index - Weight (b) table from Stepwise Regression"),
+      h2("Rest Index - Weight (b) table from Stepwise Regression"),
       
       box(width = 12,
-        DT::dataTableOutput("home_model_table")
+        DT::dataTableOutput("rest_model_table")
       ) # End of box
       
     ), # End of tabItem

@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Mar 14 2021
+# Mar 20 2021
 
 
 # --- Load packages ---------------------------------------
@@ -42,6 +42,7 @@ load("www/temp_ana_data_extra_measure.RData")
 
 # For each additional Index, load the regression model table
 load("www/m_step_df_home.RData")
+load("www/m_step_df_fp_health.RData")
 
 # --- Calculate Index Score ----------------------------------
 
@@ -84,8 +85,18 @@ measure_lst_home <- filter(m_step_df_home, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_top5_lst_home <- measure_lst_home[c(1:5)]
-measure_lst_home <- measure_lst_home[c(-1:-5)]
+measure_top5_lst_home <- measure_lst_home[c(1:2, 4, 7:8)]
+measure_lst_home <- measure_lst_home[c(-1,-2, -4, -7, -8)]
+
+# Measure lst for Fair and Poor Health as Outcome
+measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+measure_top5_lst_fp_heelth <- measure_lst_fp_health[c(1:5)]
+measure_lst_fp_health <- measure_lst_fp_health[c(-1:-5)]
 
 # Calculate Index with Fixed Slider values
 fixed_z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
