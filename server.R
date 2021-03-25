@@ -514,7 +514,7 @@ shinyServer(function(input, output, session) {
         b5 <- filter(slider_data, var_name == "percent_insufficient_sleep") %>%
          dplyr::select(b) %>% unlist() %>% as.numeric()
         
-        if (input$iv_top5 == "percent_fair_or_poor_health") {
+        if (input$iv_top5 == "percent_fair_or_poor_health" & input$iv != "Select a Measure") {
           bm <- filter(slider_med_data, var_name == input$iv) %>% 
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           b <- b2 * bm
@@ -532,8 +532,12 @@ shinyServer(function(input, output, session) {
         value2_5 <- abs(round(value * ((b5 * input$change5)/100), 0))
         
         value2 <- sum(value2_0, value2_top5, value2_1, value2_2, value2_3, value2_4, value2_5, na.rm = T)
+        
+
 
         value2_per = round((value2 / value) * 100, 1)
+        
+        print(paste0("pop impact:", value2, "      ", value, "      ", value2_per, "%"))
         
         value3 <- paste0(value2, " (", value2_per, "%)")
         
@@ -695,6 +699,7 @@ shinyServer(function(input, output, session) {
         
         # Get weight aka slider data
         slider_data <- slider_data()
+        slider_med_data <- slider_med_data()
         
         sd.check <<- slider_data
         
@@ -725,11 +730,24 @@ shinyServer(function(input, output, session) {
           xchange <- input$change
         }
         
+        if (input$iv_top5 == "percent_fair_or_poor_health" & input$iv != "Select a Measure") {
+          b2 <- filter(slider_data, var_name == "percent_fair_or_poor_health") %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          bm <- filter(slider_med_data, var_name == input$iv) %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          real_b <- b2 * bm
+          print(paste0("Mod Route(", input$iv, "): ", real_b, " = ", bm, " * ", b2))
+        } else {
+          real_b <- slider_data$b
+        }
+        
         # Modify the data
         data <- mutate(data,
           label = paste0(county, "\n", state),
           label = ifelse(focus == 1, label, NA),
-          percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive))
+          percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (real_b * xchange)), percent_physically_inactive))
+        
+        cat(print(paste0(slider_data$var_name, " - ", slider_data$b, "\n", real_b)))
         
         if (input$region != "--") {
           
@@ -827,6 +845,7 @@ shinyServer(function(input, output, session) {
       
         # Get weight aka slider data
         slider_data <- slider_data()
+        slider_med_data <- slider_med_data()
         
         # Change x axis
         if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
@@ -835,11 +854,24 @@ shinyServer(function(input, output, session) {
           xchange <- input$change
         }
         
+        if (input$iv_top5 == "percent_fair_or_poor_health" & input$iv != "Select a Measure") {
+          b2 <- filter(slider_data, var_name == "percent_fair_or_poor_health") %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          bm <- filter(slider_med_data, var_name == input$iv) %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          real_b <- b2 * bm
+          print(paste0("Mod Route(", input$iv, "): ", real_b, " = ", bm, " * ", b2))
+        } else {
+          real_b <- slider_data$b
+        }
+        
+        if (nrow(slider_data) < 1) {real_b <- 0}
+        
         rank_df <-  ana_data_1_wgeo %>%
             dplyr::select(fips, state, county, percent_physically_inactive) %>%
             mutate(
              focus = ifelse(state == input$state & county == input$county, 1, 0),
-             percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive),
+             percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (real_b * xchange)), percent_physically_inactive),
               rank_value = rank(percent_physically_inactive),
               per_rank_value = (1 - percent_rank(percent_physically_inactive)) * 100
             ) %>%
@@ -1632,7 +1664,7 @@ shinyServer(function(input, output, session) {
           mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$rest_change_top5, top5_iv))
         }
         
-        if (input$iv != "Select a Measure") {
+        if (input$rest_iv != "Select a Measure") {
           
         data <- data %>%
             rename(
