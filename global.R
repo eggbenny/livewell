@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Mar 22 2021
+# Mar 24 2021
 
 
 # --- Load packages ---------------------------------------
@@ -91,8 +91,8 @@ measure_lst_play <- filter(m_step_df, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_top5_lst_play <- measure_lst_play[c(1:5)]
-measure_lst_play <- measure_lst_play[c(-1:-5)]
+measure_top5_lst_play <- measure_lst_play[c(1:4, 6)]
+measure_lst_play <- measure_lst_play[c(-1:-6)]
 
 # Measure lst for Rest Index
 measure_lst_rest <- filter(m_step_df_home, var_name != "(Intercept)") %>%
@@ -112,8 +112,8 @@ measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") 
   unlist() %>%
   as.character()
 
-measure_top5_lst_fp_health <- measure_lst_fp_health[c(1:2, 5, 7, 8)]
-measure_lst_fp_health <- measure_lst_fp_health[c(-1, -2, -5, -6, -8)]
+measure_top5_lst_fp_health <- measure_lst_fp_health[c(2, 7, 9, 10, 11)]
+measure_lst_fp_health <- measure_lst_fp_health[c(-1, -5, -6, -8)]
 
 # Calculate Index with Fixed Slider values
 fixed_z_data_1_wgeo_long <- ana_data_1_wgeo_long %>%

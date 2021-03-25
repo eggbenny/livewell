@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Mar 21 2021
+# Mar 23 2021
 
 
 # --- ui --------------------------------------------------
@@ -160,7 +160,7 @@ body <- dashboardBody(
                         "% of Obese Adults" = "percent_adults_with_obesity",
                         "% of Adults with Insufficient Sleep" = "percent_insufficient_sleep",
                         "% of Smoking Adults" = "percent_smokers",
-                        "% of Excessive Drinking Adults" = "percent_excessive_drinking"),
+                        "% of Access to Exercise Opportunities" = "percent_with_access_to_exercise_opportunities"),
             selected = "% Fair or Poor Health"),
             
           sliderInput("change_top5",
@@ -171,9 +171,9 @@ body <- dashboardBody(
           ),
           
           column(width = 12,
-            selectizeInput("iv_domain", "Filter by Top N / Domain",
-              choices = c("Top N", domain_lst),
-              selected = "Top N"),
+            selectizeInput("iv_domain", "Filter by Key Impact / Domain",
+              choices = c("Key Impact", domain_lst),
+              selected = "Key Impact"),
             selectizeInput("iv", "Select a measure",
               choices = c("Select a Measure", measure_lst_play),
               selected = "Select a Measure"),

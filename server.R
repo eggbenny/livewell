@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Mar 20 2021
+# Mar 24 2021
 
 # --- Server ----------------------------------------------
 
@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
       
       if (input$iv_top5 == "percent_fair_or_poor_health") {
        
-       if (input$iv_domain != "Top N") {
+       if (input$iv_domain != "Key Impact") {
          # choice_lst <- measure_lst_fp_health
          choice_lst <- filter(domain_map, Domain == input$iv_domain, var_name %in% measure_lst_fp_health) %>%
            dplyr::select(var_name) %>% unlist() %>% as.character()
@@ -1555,7 +1555,7 @@ shinyServer(function(input, output, session) {
         
         # Modify the data
         data <- mutate(data,
-          label = paste0(county, "\n", state),
+          label = paste0(county),
           label = ifelse(focus == 1, label, NA),
           percent_physically_inactive = ifelse(focus == 1, (percent_physically_inactive + (slider_data$b * xchange)), percent_physically_inactive))
         
@@ -1565,7 +1565,7 @@ shinyServer(function(input, output, session) {
             group_by(Region) %>% 
             summarise(across(where(is.numeric), mean, na.rm = T)) %>%
             filter(Region == input$region) %>%
-            mutate(label = paste0(Region, "  - ", input$state),
+            mutate(label = paste0(Region),
                    label = ifelse(focus == 1, label, NA))
           
           region.data.check <<- region_data
@@ -1598,9 +1598,11 @@ shinyServer(function(input, output, session) {
           ggplot(data, 
             aes(percent_physically_inactive, score, color = focus)) +
             geom_point(size = 5) +
-            geom_point(data = region_data, size = 7, color = "purple") +
+            geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
+            geom_label_repel(aes(label = label),
+                       color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
             geom_label_repel(data = region_data, aes(label = label),
-                       color = "black") +
+                       color = "black", size = 7) +
             labs(y = "Play Index (0 to 100)", x = " % of Population Physically Inactive") +
             theme_minimal() +
             theme(legend.position = "none")     
