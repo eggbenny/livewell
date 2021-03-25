@@ -146,7 +146,7 @@ shinyServer(function(input, output, session) {
       z_data_1_wgeo_long <- z_data_1_wgeo_long %>%
           mutate(
               focusOrg = focus,
-              focus = ifelse(Region == input$region, 1, focus),
+              focus = ifelse(Region == input$region, 1, 0),
               focus = ifelse(is.na(focus), focusOrg, focus))
       }
       
