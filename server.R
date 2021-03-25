@@ -1593,6 +1593,10 @@ shinyServer(function(input, output, session) {
         
         if (input$region != "--") {
           
+          data <- mutate(data,
+                 focus = ifelse(Region == input$region, 1, 0),
+                 label = ifelse(focus == 1, label, NA),)
+          
           region_data <- data %>% 
             group_by(Region) %>% 
             summarise(across(where(is.numeric), mean, na.rm = T)) %>%
