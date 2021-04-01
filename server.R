@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# Mar 24 2021
+# Mar 31 2021
 
 # --- Server ----------------------------------------------
 
@@ -1123,6 +1123,224 @@ shinyServer(function(input, output, session) {
         
      })
      
+    
+    # --- Extra Row Card ---
+     
+    # Physical Inactivity change for card
+    phy_inactive_change <- reactive({
+      
+        # Physical Inactivity
+        # Get data
+        data <- plot_data()
+        
+        data <- left_join(data, region_lkup, by = c("fips" = "FIPS"))
+        
+        if (input$region != "--") {
+          data <- data %>% mutate(
+              focusOrg = focus,
+              focus = ifelse(Region == input$region, 1, focus),
+              focus = ifelse(is.na(focus), focusOrg, focus))
+        }
+        
+        # Get weight aka slider data
+        slider_data <- slider_data()
+        slider_med_data <- slider_med_data()
+        
+        sd.check <<- slider_data
+        
+        if (nrow(slider_data) == 0) {
+          slider_data <- data.frame(b = 0)
+        }
+        
+        # Make focus generic
+        if (input$iv_top5 != "Select a Measure") {
+        data <- data %>%
+            rename(
+              "top5_iv" = input$iv_top5)  %>%
+          mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$change_top5, top5_iv))
+        }
+        
+        if (input$iv != "Select a Measure") {
+          
+        data <- data %>%
+            rename(
+              "focus_iv" = input$iv) %>%
+          mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+        }
+        
+        # Change x axis
+        if(input$iv_top5 != "Select a Measure" & input$iv == "Select a Measure") {
+          xchange <- input$change_top5
+        } else {
+          xchange <- input$change
+        }
+        
+        if (input$iv_top5 == "percent_fair_or_poor_health" & input$iv != "Select a Measure") {
+          b2 <- filter(slider_data, var_name == "percent_fair_or_poor_health") %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          bm <- filter(slider_med_data, var_name == input$iv) %>% 
+                 dplyr::select(b) %>% unlist() %>% as.numeric()
+          real_b <- b2 * bm
+          print(paste0("Mod Route(", input$iv, "): ", real_b, " = ", bm, " * ", b2))
+        } else {
+          real_b <- slider_data$b
+        }
+        
+        change <- real_b * xchange
+        
+        return(change)
+        
+    })
+    
+    
+    # Extra data gropuing
+    extra_data_for_card <- reactive({
+        
+        select_data <- z_geo_df()
+        data <- left_join(select_data, ana_data_1_criterion, by = c("fips", "state", "county"))
+        
+        data <- data %>%
+          left_join(data_labour_1, by = c("fips" = "FIPS"))
+  
+        if (input$region != "--") {
+          
+          data <- left_join(data, region_lkup, by = c("fips" = "FIPS"))
+          
+          data <- data %>% 
+            filter(Region == input$region) %>%
+            ungroup() %>%
+            group_by(Region) %>% 
+            summarise(across(where(is.numeric), mean, na.rm = T))
+           
+        } else {
+          
+          data <- filter(data, state == input$state, county == input$county)
+          
+        } 
+    })
+
+     
+    # New cards (4):  
+     # Years of Potential Life Lost Rate, 
+     # Average Number of Physically Unhealthy Days, 
+     # Average Number of Mentally Unhealthy Days, 
+     # Premature age-adjusted mortality
+     
+    output$play_impact_card_1 <- renderInfoBox({
+      
+        # Physical inactive change
+        phy_inactive_change <- phy_inactive_change()
+        # Get impact model b
+        data <- z_geo_w_criterion_df()
+      
+        # value <- cor(data$score, data$years_of_potential_life_lost_rate, 
+        #     method = "pearson", use = "complete.obs")
+        
+        model <- lm(years_of_potential_life_lost_rate ~ score, data = data) %>%
+        tidy()
+        
+        b <- model$estimate[2]
+        
+        data <- extra_data_for_card()
+              
+        b.check <<- b
+        select_data.check <<- data
+        phy_inactive_change.check <<- phy_inactive_change
+        
+        final_value <- round(data$years_of_potential_life_lost_rate - (b * phy_inactive_change), 1)
+        
+        print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+        
+        infoBox(
+          HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
+          final_value,
+          fill = TRUE,
+          color = "olive"
+        )
+      
+    })
+    
+    output$play_impact_card_2 <- renderInfoBox({
+      
+        # Physical inactive change
+        phy_inactive_change <- phy_inactive_change()
+        # Get impact model b
+        data <- z_geo_w_criterion_df()
+        
+        model <- lm(average_number_of_physically_unhealthy_days ~ score, data = data) %>%
+        tidy()
+        
+        b <- model$estimate[2]
+        
+        data <- extra_data_for_card()
+        
+        final_value <- round(data$average_number_of_physically_unhealthy_days - (b * phy_inactive_change), 2)
+        
+        print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+        
+        infoBox(
+          HTML(paste("Average # of", br(), "Physically Unhealthy Days")),
+          final_value,
+          fill = TRUE,
+          color = "olive"
+        )
+      
+    })
+    
+    output$play_impact_card_3 <- renderInfoBox({
+      
+        # Physical inactive change
+        phy_inactive_change <- phy_inactive_change()
+        # Get impact model b
+        data <- z_geo_w_criterion_df()
+        
+        model <- lm(average_number_of_mentally_unhealthy_days.x ~ score, data = data) %>%
+        tidy()
+        
+        b <- model$estimate[2]
+        
+        data <- extra_data_for_card()
+        
+        final_value <- round(data$average_number_of_mentally_unhealthy_days.x - (b * phy_inactive_change), 2)
+        
+        print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+        
+        infoBox(
+          HTML(paste("Average # of", br(), "Mentally Unhealthy Days")),
+          final_value,
+          fill = TRUE,
+          color = "olive"
+        )
+      
+    })
+    
+    output$play_impact_card_4 <- renderInfoBox({
+
+        # Physical inactive change
+        phy_inactive_change <- phy_inactive_change()
+        # Get impact model b
+        data <- z_geo_w_criterion_df()
+
+        model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+        tidy()
+
+        b <- model$estimate[2]
+
+        data <- extra_data_for_card()
+        
+        final_value <- round(data$age_adjusted_death_rate - (b * phy_inactive_change), 1)
+
+        print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+
+        infoBox(
+          HTML(paste("Premature Age Adjusted", br(), "Mortality")),
+          final_value,
+          fill = TRUE,
+          color = "olive"
+        )
+
+    })
+
     # --- Extra Impact Card ---
     # Optional for some Clients
      
@@ -1130,20 +1348,31 @@ shinyServer(function(input, output, session) {
       
       # annual_avg_emplvl * 166 (from literature per capita cost)
       
-        data <- select_geo_df()
+        # data <- select_geo_df()
+        
+        data <- extra_data_for_card()
         
         data_try_check <<- data
         
         # Join with labour data
-        data <- data %>%
-          left_join(data_labour_1, by = c("fips" = "FIPS"))
+        # data <- data %>%
+        #   left_join(data_labour_1, by = c("fips" = "FIPS"))
         
         # Pop change impact repeat here
         # TODO: move to reactive
-        value <-  select_geo_df() %>%
+        
+        if (input$region == "--") {
+          value <-  select_geo_df() %>%
             dplyr::select(population) %>%
             unlist() %>%
             as.numeric()
+        } else {
+          value <-  select_geo_region_df() %>%
+            dplyr::select(population) %>%
+            unlist() %>%
+            as.numeric()
+          value <- sum(value)
+        }
         
          # slider data
         slider_data <- slider_data()

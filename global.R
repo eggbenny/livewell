@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Mar 24 2021
+# Apr 1 2021
 
 
 # --- Load packages ---------------------------------------
@@ -36,9 +36,9 @@ library(urbnmapr)
 # --- Import Processed data ----------------------------------
 
 load("www/temp_shiny_data.RData")
-load("www/temp_ana_data_v2.RData")
 load("www/temp_extra_data.RData")
 load("www/temp_ana_data_extra_measure.RData")
+load("www/temp_ana_data_v2.RData")
 
 # load domain map
 load("www/domain_map.RData")
@@ -69,7 +69,8 @@ ana_data_1_criterion <- ana_data_1_wgeo %>%
          # average_number_of_physically_unhealthy_days,
          average_number_of_mentally_unhealthy_days,
          preventable_hospitalization_rate,
-         percent_adults_with_diabetes)
+         percent_adults_with_diabetes,
+         age_adjusted_death_rate)
 
 # Join with step-wise full table to get the weight
 rest_ana_data_1_wgeo_long <- ana_data_1_wgeo_long %>%
@@ -154,3 +155,44 @@ data_out <- left_join(data_out, phy_inactive_wgeo, by = c("fips", "state", "coun
 
 # Save fixed play index score into csv
 # write_csv(data_out, "../Beta/data/play_index_score_all_counties.csv", na = "")
+
+
+# Rest (aka Home Index dump data outs)
+rest_fixed_z_data_1_wgeo_long <- rest_ana_data_1_wgeo_long %>%
+        ungroup() %>%
+        group_by(var_name) %>%
+        mutate(
+          z_value = as.numeric(scale(value)),
+          score = scales::rescale(z_value, c(0, 100)),
+          score = 100 - score,
+          rank_value = rank(-score),
+          per_rank_value = percent_rank(score) * 100,
+          rest = ifelse(!is.na(b), 1, 0)) %>%
+        filter(rest == 1) %>%
+        group_by(fips, state, county) %>%
+        mutate(
+          rest_uw = mean(score, na.rm = T),
+          rest_w = weighted.mean(score, pratt, na.rm = T)
+        )
+      
+# Convert back to wide format
+rest_fixed_z_data_1_wgeo <- rest_fixed_z_data_1_wgeo_long %>%
+        dplyr::select(fips, state, county, var_name, value, z_value, score, rest_uw, rest_w) %>%
+        pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, rest_uw, rest_w)) %>%
+        ungroup() %>%
+        mutate(
+          score = rest_w_average_number_of_mentally_unhealthy_days,
+          quintile = ntile(score, 5)) # Use fair and poor health as a proxy
+      
+names(rest_fixed_z_data_1_wgeo) <- str_replace_all(names(rest_fixed_z_data_1_wgeo), "^value_", "")
+
+data_out <- dplyr::select(rest_fixed_z_data_1_wgeo, fips,	state,	county, average_number_of_mentally_unhealthy_days,	percent_smokers,	average_daily_pm2_5,	percent_physically_inactive, percent_unemployed, score, quintile)
+
+# Add percent insufficient sleep back
+per_insufficient_sleep_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, 	percent_insufficient_sleep)
+
+data_out <- left_join(data_out, per_insufficient_sleep_wgeo, by = c("fips", "state", "county"))
+
+# # Save fixed play index score into csv
+# write_csv(data_out, "../Beta/data/rest_index_score_all_counties.csv", na = "")
+

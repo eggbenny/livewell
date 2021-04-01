@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Mar 23 2021
+# Apr 1 2021
 
 
 # --- ui --------------------------------------------------
@@ -60,7 +60,7 @@ body <- dashboardBody(
                     conditionalPanel(
                         condition = "input.extra == true",
                          infoBoxOutput("play_extra_impact_card", width = 12)
-                    )
+                    ),
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
               )
@@ -99,10 +99,31 @@ body <- dashboardBody(
       # 
       # 
       # ), # End of box
+      
+   conditionalPanel(
+    condition = "input.extra == true",
+    tabBox(width = 3,
+      title = "Impact of Play on",
+      # The id lets us use input$tabset1 on the server to find the current tab
+      id = "tabset2", 
+     tabPanel("Key Criteria",
+      fluidRow(
+        infoBoxOutput("play_impact_card_1", width = 12),
+        infoBoxOutput("play_impact_card_2", width = 12),
+        infoBoxOutput("play_impact_card_3", width = 12),
+        infoBoxOutput("play_impact_card_4", width = 12)
+      )  
+     )
+    ) #End of box
+   ),
+   
+   conditionalPanel(
+    condition = "input.extra == false",   
     column(width = 6,   
       box(width = 12,  
           plotOutput("play_grid_plot")
      ) # End of box
+    )
     ),
       
       column(width = 3,
