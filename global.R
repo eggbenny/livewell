@@ -157,7 +157,7 @@ phy_inactive_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, populat
 data_out <- left_join(data_out, phy_inactive_wgeo, by = c("fips", "state", "county"))
 
 # Save fixed play index score into csv
-write_csv(data_out, "../Beta/data/play_index_score_all_counties_all_stepwise_measure.csv", na = "")
+# write_csv(data_out, "../Beta/data/play_index_score_all_counties_all_stepwise_measure.csv", na = "")
 
 
 # Rest (aka Home Index dump data outs)
