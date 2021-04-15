@@ -148,13 +148,16 @@ names(fixed_z_data_1_wgeo) <- str_replace_all(names(fixed_z_data_1_wgeo), "^valu
 
 data_out <- dplyr::select(fixed_z_data_1_wgeo, fips,	state,	county, percent_fair_or_poor_health,	percent_smokers,	percent_adults_with_obesity,	percent_excessive_drinking,	percent_insufficient_sleep, score, quintile)
 
+# Data All out
+data_out <- dplyr::select(fixed_z_data_1_wgeo, fips,	state,	county, percent_fair_or_poor_health:percent_rural, score, quintile)
+
 # Add physical_inactivity_back
 phy_inactive_wgeo <- dplyr::select(ana_data_1_wgeo, fips, state, county, population, percent_physically_inactive)
 
 data_out <- left_join(data_out, phy_inactive_wgeo, by = c("fips", "state", "county"))
 
 # Save fixed play index score into csv
-# write_csv(data_out, "../Beta/data/play_index_score_all_counties.csv", na = "")
+write_csv(data_out, "../Beta/data/play_index_score_all_counties_all_stepwise_measure.csv", na = "")
 
 
 # Rest (aka Home Index dump data outs)
