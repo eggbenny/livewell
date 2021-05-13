@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# Apr 1 2021
+# May 12 2021
 
 
 # --- ui --------------------------------------------------
@@ -131,19 +131,19 @@ body <- dashboardBody(
         box(width = 12,
           column(width = 6,
           selectizeInput("state", "Select a state",
-            choices = sort(unique(ana_data_1_wgeo$state)),
+            choices = sort(unique(ana_data_wgeo$state)),
             selected = "North Carolina")
           ),
           
           column(width = 6,
           selectizeInput("county", "Select a county",
-            choices = sort(unique(ana_data_1_wgeo$county)),
+            choices = sort(unique(ana_data_wgeo$county)),
             selected = "Richmond")
           ),
           
           column(width = 6,
           selectizeInput("region", "Group by Region",
-            choices = c("--", sort(unique(ana_data_1_wgeo$RegionOrg))))
+            choices = c("--", sort(unique(ana_data_wgeo$RegionOrg))))
           ),
           
           # column(width = 12,
@@ -177,11 +177,9 @@ body <- dashboardBody(
          column(width = 12,
           selectizeInput("iv_top5", "Select a measure",
             choices = c("Select a Measure" = "Select a Measure", 
-                        "% Fair or Poor Health" = "percent_fair_or_poor_health",
-                        "% of Obese Adults" = "percent_adults_with_obesity",
-                        "% of Adults with Insufficient Sleep" = "percent_insufficient_sleep",
-                        "% of Smoking Adults" = "percent_smokers",
-                        "% of Access to Exercise Opportunities" = "percent_with_access_to_exercise_opportunities"),
+                        "% Fair or Poor Health" = "per_fair_or_poor_health",
+                        "% with Grad or Prof Degree" = "per_w_grad_or_prof_degree",
+                        "% of Adults with Diabetes" = "per_adults_with_diabetes"),
             selected = "% Fair or Poor Health"),
             
           sliderInput("change_top5",
@@ -263,25 +261,28 @@ body <- dashboardBody(
         box(width = 12,
           column(width = 6,
           selectizeInput("rest_state", "Select a state",
-            choices = sort(unique(ana_data_1_wgeo$state)),
+            choices = sort(unique(ana_data_wgeo$state)),
             selected = "North Carolina")
           ),
           
           column(width = 6,
           selectizeInput("rest_county", "Select a county",
-            choices = sort(unique(ana_data_1_wgeo$county)),
+            choices = sort(unique(ana_data_wgeo$county)),
             selected = "Richmond")
+          ),
+          
+          column(width = 6,
+                 selectizeInput("rest_region", "Group by Region",
+                                choices = c("--", sort(unique(ana_data_wgeo$RegionOrg))))
           ),
           
          column(width = 12,
           selectizeInput("rest_iv_top5", "Select a measure",
             choices = c("Select a Measure",
-                        "Avg. # of Mentally Unhealthy Days" = "average_number_of_mentally_unhealthy_days",
-                        "% of Smoking Adults" = "percent_smokers",
-                        "Air Pollution" = "average_daily_pm2_5",
-                        "% Physically Inactive" = "percent_physically_inactive",
-                        "% Umemployed" = "percent_unemployed"),
-            selected = "Avg. # of Mentally Unhealthy Days"),
+                        "% Routine Doctor Checkup" = "routine_doctor_checkup_past_years_18plus",
+                        "Years of Potential Life Lost Rate" = "years_of_potential_life_lost_rate",
+                        "Avg No of Mentally Unhealthy Days" = "avg_no_of_mentally_unhealthy_days"),
+            selected = "Routine Doctor Checkup"),
             
           sliderInput("rest_change_top5",
             "If I change the selected top 5 measure by 1% ... ",
@@ -291,6 +292,9 @@ body <- dashboardBody(
           ),
           
           column(width = 12,
+           selectizeInput("rest_iv_domain", "Filter by Key Impact / Domain",
+                          choices = c("Key Impact", domain_lst),
+                          selected = "Key Impact"),
             selectizeInput("rest_iv", "Select a measure",
               choices = c("Select a Measure", measure_lst_rest),
               selected = "Select a Measure"),
@@ -323,18 +327,53 @@ body <- dashboardBody(
             box(width = 12,
                 DT::dataTableOutput("fp_health_model_table")
             ) # End of box        
+          ),  # End of tabPanel
+          tabPanel("Grad or Prof Degree",
+            h2("% Adult with Grad or Prof Degree - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("grad_model_table")
+            ) # End of box        
+          ), # End of tabPanel
+          tabPanel("Adult with Diabetes",
+            h2("% Adult with Diabetes - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("diabetes_model_table")
+            ) # End of box        
           )  # End of tabPanel
         ) # End of tabBox
       
     ), # End of tabItem
  
     tabItem(tabName = "restModelTable",
-            
-      h2("Rest Index - Weight (b) table from Stepwise Regression"),
-      
-      box(width = 12,
-        DT::dataTableOutput("rest_model_table")
-      ) # End of box
+          
+          tabBox(
+          side = "left", height = "900px", width = 12,
+          selected = "Rest",
+          tabPanel("Rest",
+            h2("Rest Index - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+              DT::dataTableOutput("rest_model_table")
+            ) # End of box
+          ), # End of tabPanel
+          tabPanel("Routine Doc Checkup",
+            h2("Routine Doc Checkup - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("doc_checkup_model_table")
+            ) # End of box        
+          ),  # End of tabPanel
+          tabPanel("YPLL",
+            h2("Years of Potential Life lost Rate - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("ypll_model_table")
+            ) # End of box        
+          ), # End of tabPanel
+          tabPanel("Mentally Unhealthy Days",
+            h2("Avg No of Mentally Unhealthy Days - Weight (b) table from Stepwise Regression"),
+            box(width = 12,
+                DT::dataTableOutput("avg_m_days_model_table")
+            ) # End of box        
+          )  # End of tabPanel
+        ) # End of tabBox
       
     ), # End of tabItem
     
