@@ -218,7 +218,7 @@ domain_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)
 
 measure_all_lst_doc_checkup <- measure_lst_doc_checkup
 measure_top3_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
-measure_lst_doc_checkup <- measure_lst_doc_checkup[-c(5,7,8)]
+measure_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
 
 
 # Measure lst for YPLL as Outcome
