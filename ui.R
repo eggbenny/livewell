@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# May 12 2021
+# May 15 2021
 
 
 # --- ui --------------------------------------------------
@@ -175,6 +175,10 @@ body <- dashboardBody(
           # ),
           
          column(width = 12,
+           actionButton("reset_play", "Reset Measures") 
+         ),
+          
+         column(width = 12,
           selectizeInput("iv_top5", "Select a measure",
             choices = c("Select a Measure" = "Select a Measure", 
                         "% Fair or Poor Health" = "per_fair_or_poor_health",
@@ -274,6 +278,10 @@ body <- dashboardBody(
           column(width = 6,
                  selectizeInput("rest_region", "Group by Region",
                                 choices = c("--", sort(unique(ana_data_wgeo$RegionOrg))))
+          ),
+          
+          column(width = 12,
+                 actionButton("reset_rest", "Reset Measures") 
           ),
           
          column(width = 12,

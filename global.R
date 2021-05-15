@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# May 12 2021
+# May 15 2021
 
 
 # --- Load packages ---------------------------------------
@@ -197,8 +197,8 @@ domain_lst_diabetes <- filter(m_step_df_diabetes, var_name != "(Intercept)") %>%
   as.character()
 
 measure_all_lst_diabetes <- measure_lst_diabetes
-measure_top3_lst_diabetes <- measure_lst_diabetes[c(1:3)]
-measure_lst_diabetes <- measure_lst_diabetes[c(-1:-3)]
+measure_top3_lst_diabetes <- measure_lst_diabetes[c(2:4)]
+measure_lst_diabetes <- measure_lst_diabetes[-c(2:4)]
 
 # Measure lst for Routine Doc Checkup as Outcome
 measure_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
@@ -218,7 +218,7 @@ domain_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)
 
 measure_all_lst_doc_checkup <- measure_lst_doc_checkup
 measure_top3_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
-measure_lst_doc_checkup <- measure_lst_doc_checkup[c(-1:-8)]
+measure_lst_doc_checkup <- measure_lst_doc_checkup[-c(5,7,8)]
 
 
 # Measure lst for YPLL as Outcome
@@ -238,8 +238,8 @@ domain_lst_ypll <- filter(m_step_df_ypll, var_name != "(Intercept)") %>%
   as.character()
 
 measure_all_lst_ypll <- measure_lst_ypll
-measure_top3_lst_ypll <- measure_lst_ypll[c(4, 5, 7)]
-measure_lst_ypll <- measure_lst_ypll[c(-1:-7)]
+measure_top3_lst_ypll <- measure_lst_ypll[c(4, 7, 8)]
+measure_lst_ypll <- measure_lst_ypll[c(-4, -7, -8)]
 
 # Measure lst for Avg # of Mentally Unhealty Days as Outcome
 measure_lst_avg_m_days <- filter(m_step_df_avg_m_days, var_name != "(Intercept)") %>%

@@ -7,6 +7,30 @@
 # --- Server
 shinyServer(function(input, output, session) {
   
+    # --- reset measure ---
+  
+    observeEvent(input$reset_play, {
+      updateSelectizeInput(session, "iv", selected = "Select a Measure")
+      updateSelectizeInput(session, "iv_top5", selected = "Select a Measure")
+      updateSelectizeInput(session, "iv_domain", selected = "Key Impact")
+      updateSliderInput(session, "change", value = 0)
+      updateSliderInput(session, "change_top5", value = 0)
+      shinyjs::disable("change")
+      shinyjs::enable("change_top5")
+      
+    })
+  
+    observeEvent(input$reset_rest, {
+      updateSelectizeInput(session, "rest_iv", selected = "Select a Measure")
+      updateSelectizeInput(session, "rest_iv_top5", selected = "Select a Measure")
+      updateSelectizeInput(session, "rest_iv_domain", selected = "Key Impact")
+      updateSliderInput(session, "rest_change", value = 0)
+      updateSliderInput(session, "rest_change_top5", value = 0)
+      shinyjs::disable("rest_change")
+      shinyjs::enable("rest_change_top5")
+      
+    })
+  
     # --- measure_lst Switch ---
   
    observe({
