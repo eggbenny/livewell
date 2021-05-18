@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# May 15 2021
+# May 18 2021
 
 
 # --- Load packages ---------------------------------------
@@ -63,8 +63,18 @@ load("www/m_step_df_diabetes.RData")
 
 # Rest Index & 2nd Layers
 load("www/m_step_df_rest.RData")
-load("www/m_step_df_doc_checkup.RData")
-load("www/m_step_df_ypll.RData")
+# load("www/m_step_df_doc_checkup.RData")
+# load("www/m_step_df_ypll.RData")
+load("www/m_step_df_avg_mdays.RData")
+# per_physically_inactive aka play
+m_step_df_phy_inactive <- m_step_df_play
+load("www/m_step_df_obesity.RData")
+
+# Work Index & 2nd Layers
+load("www/m_step_df_work.RData")
+load("www/m_step_df_teen_brate.RData")
+# per_w_grad_or_prof_degree
+# load("www/m_step_df_grad.RData")
 load("www/m_step_df_avg_mdays.RData")
 
 
@@ -113,10 +123,15 @@ play_ana_data_wgeo_long <- ana_data_wgeo_long %>%
 rest_ana_data_wgeo_long <- ana_data_wgeo_long %>%
   left_join(m_step_df_rest, by = "var_name")
 
+# Join with step-wise full table to get the weight
+work_ana_data_wgeo_long <- ana_data_wgeo_long %>%
+  left_join(m_step_df_work, by = "var_name")
+
 
 # Domain lst
 domain_lst <- filter(domain_map, !is.na(Domain)) %>%
   distinct(Domain) %>% unlist() %>% as.character()
+
 
 # Measure lst for Play Index
 measure_lst_play <- filter(m_step_df_play, var_name != "(Intercept)") %>%
@@ -137,8 +152,19 @@ measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
   as.character()
 
 measure_all_lst_rest <- measure_lst_rest
-measure_top3_lst_rest <- measure_lst_rest[c(1:3)]
-measure_lst_rest <- measure_lst_rest[c(-1:-3)]
+measure_top3_lst_rest <- measure_lst_rest[c(3, 4, 6)]
+measure_lst_rest <- measure_lst_rest[c(-3, -4, -6)]
+
+# Measure lst for Work Index
+measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+measure_all_lst_work <- measure_lst_work
+measure_top3_lst_work <- measure_lst_work[c(2:4)]
+measure_lst_work <- measure_lst_work[-c(2:4)]
 
 # Measure lst for Fair and Poor Health as Outcome
 measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %>%
@@ -201,45 +227,45 @@ measure_top3_lst_diabetes <- measure_lst_diabetes[c(2:4)]
 measure_lst_diabetes <- measure_lst_diabetes[-c(2:4)]
 
 # Measure lst for Routine Doc Checkup as Outcome
-measure_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
-  arrange(desc(pratt)) %>%
-  dplyr::select(var_name) %>%
-  unlist() %>%
-  as.character()
-
-domain_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
-  arrange(desc(pratt)) %>%
-  left_join(domain_map, by = "var_name") %>%
-  filter(!is.na(Domain)) %>%
-  dplyr::select(Domain) %>%
-  distinct(Domain) %>%
-  unlist() %>%
-  as.character()
-
-measure_all_lst_doc_checkup <- measure_lst_doc_checkup
-measure_top3_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
-measure_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
+# measure_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
+#   arrange(desc(pratt)) %>%
+#   dplyr::select(var_name) %>%
+#   unlist() %>%
+#   as.character()
+# 
+# domain_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
+#   arrange(desc(pratt)) %>%
+#   left_join(domain_map, by = "var_name") %>%
+#   filter(!is.na(Domain)) %>%
+#   dplyr::select(Domain) %>%
+#   distinct(Domain) %>%
+#   unlist() %>%
+#   as.character()
+# 
+# measure_all_lst_doc_checkup <- measure_lst_doc_checkup
+# measure_top3_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
+# measure_lst_doc_checkup <- measure_lst_doc_checkup[c(5,7,8)]
 
 
 # Measure lst for YPLL as Outcome
-measure_lst_ypll <- filter(m_step_df_ypll, var_name != "(Intercept)") %>%
-  arrange(desc(pratt)) %>%
-  dplyr::select(var_name) %>%
-  unlist() %>%
-  as.character()
-
-domain_lst_ypll <- filter(m_step_df_ypll, var_name != "(Intercept)") %>%
-  arrange(desc(pratt)) %>%
-  left_join(domain_map, by = "var_name") %>%
-  filter(!is.na(Domain)) %>%
-  dplyr::select(Domain) %>%
-  distinct(Domain) %>%
-  unlist() %>%
-  as.character()
-
-measure_all_lst_ypll <- measure_lst_ypll
-measure_top3_lst_ypll <- measure_lst_ypll[c(4, 7, 8)]
-measure_lst_ypll <- measure_lst_ypll[c(-4, -7, -8)]
+# measure_lst_ypll <- filter(m_step_df_ypll, var_name != "(Intercept)") %>%
+#   arrange(desc(pratt)) %>%
+#   dplyr::select(var_name) %>%
+#   unlist() %>%
+#   as.character()
+# 
+# domain_lst_ypll <- filter(m_step_df_ypll, var_name != "(Intercept)") %>%
+#   arrange(desc(pratt)) %>%
+#   left_join(domain_map, by = "var_name") %>%
+#   filter(!is.na(Domain)) %>%
+#   dplyr::select(Domain) %>%
+#   distinct(Domain) %>%
+#   unlist() %>%
+#   as.character()
+# 
+# measure_all_lst_ypll <- measure_lst_ypll
+# measure_top3_lst_ypll <- measure_lst_ypll[c(4, 7, 8)]
+# measure_lst_ypll <- measure_lst_ypll[c(-4, -7, -8)]
 
 # Measure lst for Avg # of Mentally Unhealty Days as Outcome
 measure_lst_avg_m_days <- filter(m_step_df_avg_m_days, var_name != "(Intercept)") %>%
@@ -260,6 +286,66 @@ domain_lst_avg_m_days <- filter(m_step_df_avg_m_days, var_name != "(Intercept)")
 measure_all_lst_avg_m_days <- measure_lst_avg_m_days
 measure_top3_lst_avg_m_days <- measure_lst_avg_m_days[c(1:3)]
 measure_lst_avg_m_days <- measure_lst_avg_m_days[c(-1:-3)]
+
+
+measure_lst_obesity <- filter(m_step_df_obesity, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+domain_lst_obesity <- filter(m_step_df_obesity, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  left_join(domain_map, by = "var_name") %>%
+  filter(!is.na(Domain)) %>%
+  dplyr::select(Domain) %>%
+  distinct(Domain) %>%
+  unlist() %>%
+  as.character()
+
+measure_all_lst_obesity <- measure_lst_obesity
+measure_top3_lst_obesity <- measure_lst_obesity[c(1:3)]
+measure_lst_obesity <- measure_lst_obesity[-c(1:3)]
+
+
+measure_lst_phy_inactive <- filter(m_step_df_phy_inactive, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+domain_lst_phy_inactive <- filter(m_step_df_phy_inactive, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  left_join(domain_map, by = "var_name") %>%
+  filter(!is.na(Domain)) %>%
+  dplyr::select(Domain) %>%
+  distinct(Domain) %>%
+  unlist() %>%
+  as.character()
+
+measure_all_lst_phy_inactive <- measure_lst_phy_inactive
+measure_top3_lst_phy_inactive <- measure_lst_phy_inactive[c(1:3)]
+measure_lst_phy_inactive <- measure_lst_phy_inactive[-c(1:3)]
+
+
+measure_lst_teen_brate <- filter(m_step_df_teen_brate, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  dplyr::select(var_name) %>%
+  unlist() %>%
+  as.character()
+
+domain_lst_teen_brate <- filter(m_step_df_teen_brate, var_name != "(Intercept)") %>%
+  arrange(desc(pratt)) %>%
+  left_join(domain_map, by = "var_name") %>%
+  filter(!is.na(Domain)) %>%
+  dplyr::select(Domain) %>%
+  distinct(Domain) %>%
+  unlist() %>%
+  as.character()
+
+measure_all_lst_teen_brate <- measure_lst_teen_brate
+measure_top3_lst_teen_brate <- measure_lst_teen_brate[c(1, 3, 5)]
+measure_lst_teen_brate <- measure_lst_teen_brate[-c(1, 3, 5)]
 
 
 # Calculate Index with Fixed Slider values
@@ -327,8 +413,8 @@ rest_fixed_z_data_wgeo <- rest_fixed_z_data_wgeo_long %>%
         pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, rest_uw, rest_w)) %>%
         ungroup() %>%
         mutate(
-          score = rest_w_routine_doctor_checkup_past_years_18plus,
-          quintile = ntile(score, 5)) # routine_doctor_checkup_past_years_18plus
+          score = rest_w_avg_no_of_mentally_unhealthy_days ,
+          quintile = ntile(score, 5)) # avg_no_of_mentally_unhealthy_days as a proxy
       
 names(rest_fixed_z_data_wgeo) <- str_replace_all(names(rest_fixed_z_data_wgeo), "^value_", "")
 
@@ -340,6 +426,46 @@ per_insufficient_sleep_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, co
 
 data_out <- left_join(data_out, per_insufficient_sleep_wgeo, by = c("fips", "state", "county"))
 
-# # Save fixed play index score into csv
+# # Save fixed Rest index score into csv
 # write_csv(data_out, "../Beta/data/rest_index_score_all_counties_all_stepwise_measure.csv", na = "")
 
+
+# Work Index dump data outs
+work_fixed_z_data_wgeo_long <- work_ana_data_wgeo_long %>%
+  ungroup() %>%
+  group_by(var_name) %>%
+  mutate(
+    z_value = as.numeric(scale(value)),
+    score = scales::rescale(z_value, c(0, 100)),
+    score = ifelse(Direction == "N", 100 - score, score),
+    rank_value = rank(-score),
+    per_rank_value = percent_rank(score) * 100,
+    work = ifelse(!is.na(b), 1, 0)) %>%
+  filter(work == 1) %>%
+  group_by(fips, state, county) %>%
+  mutate(
+    work_uw = mean(score, na.rm = T),
+    work_w = weighted.mean(score, pratt, na.rm = T)
+  )
+
+# Convert back to wide format
+work_fixed_z_data_wgeo <- work_fixed_z_data_wgeo_long %>%
+  dplyr::select(fips, state, county, var_name, value, z_value, score, work_uw, work_w) %>%
+  pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, work_uw, work_w)) %>%
+  ungroup() %>%
+  mutate(
+    score = work_w_teen_birth_rate,
+    quintile = ntile(score, 5)) # teen_birth_rate as a proxy
+
+names(work_fixed_z_data_wgeo) <- str_replace_all(names(work_fixed_z_data_wgeo), "^value_", "")
+
+# Data All out
+data_out <- dplyr::select(work_fixed_z_data_wgeo, fips,	state,	county, avg_no_of_mentally_unhealthy_days:current_asthma_18plus, score, quintile)
+
+# Add percent insufficient sleep back
+per_w_a_disability <- dplyr::select(ana_data_full_wgeo, fips, state, county, per_w_a_disability)
+
+data_out <- left_join(data_out, per_w_a_disability, by = c("fips", "state", "county"))
+
+# # Save fixed Work index score into csv
+write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")

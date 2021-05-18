@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# May 15 2021
+# May 17 2021
 
 
 # --- ui --------------------------------------------------
@@ -17,10 +17,15 @@ sidebar <- dashboardSidebar(
     menuItem("Rest Dashboard", tabName = "dashboard_rest", 
              icon = icon("dashboard"),
              badgeLabel = "Demo", badgeColor = "green"),
+    menuItem("Work Dashboard", tabName = "dashboard_work", 
+             icon = icon("dashboard"),
+             badgeLabel = "Demo", badgeColor = "green"),
     menuItem("Play Model Table", icon = icon("th"),
              tabName = "playModelTable"),
     menuItem("Rest Model Table", icon = icon("th"),
              tabName = "restModelTable"),
+    menuItem("Work Model Table", icon = icon("th"),
+             tabName = "workModelTable"),
     menuItem("Play Index", icon = icon("bar-chart-o"),
              tabName = "playIndex"),
     menuItem("Map", icon = icon("map-marked"),
@@ -287,10 +292,10 @@ body <- dashboardBody(
          column(width = 12,
           selectizeInput("rest_iv_top5", "Select a measure",
             choices = c("Select a Measure",
-                        "% Routine Doctor Checkup" = "routine_doctor_checkup_past_years_18plus",
-                        "Years of Potential Life Lost Rate" = "years_of_potential_life_lost_rate",
-                        "Avg No of Mentally Unhealthy Days" = "avg_no_of_mentally_unhealthy_days"),
-            selected = "Routine Doctor Checkup"),
+                        "Avg No of Mentally Unhealthy Days" = "avg_no_of_mentally_unhealthy_days",
+                        "% Physical Inactive" = "per_physically_inactive",          
+                        "% with Obesity" = "per_adults_with_obesity"),
+            selected = "Avg No of Mentally Unhealthy Days"),
             
           sliderInput("rest_change_top5",
             "If I change the selected top 5 measure by 1% ... ",
@@ -319,6 +324,111 @@ body <- dashboardBody(
      ), # End of tabItem    
 
 
+     tabItem(tabName = "dashboard_work",
+         
+         h3("Dashboard"),
+         
+         fluidRow(
+           
+           tabBox(
+             width = 3,
+             title = "Impact",
+             # The id lets us use input$tabset1 on the server to find the current tab
+             id = "tabset1_work", 
+             tabPanel("Key Measures",
+                      fluidRow(
+                        infoBoxOutput("work_index_echo", width = 12),
+                        infoBoxOutput("work_index_rank", width = 12),
+                        infoBoxOutput("work_dv_echo", width = 12),
+                        infoBoxOutput("work_dv_rank", width = 12),
+                        infoBoxOutput("work_population", width = 12),
+                        infoBoxOutput("work_pop_impact", width = 12),
+                        conditionalPanel(
+                          condition = "input.extra == true",
+                          infoBoxOutput("work_extra_impact_card", width = 12)
+                        )
+                        # infoBoxOutput("iv_echo", width = 12),
+                        # infoBoxOutput("iv_rank", width = 12)  
+                      )
+             )
+             
+             # tabPanel("Criteria Measures",
+             #   fluidRow(
+             #     column(width = 12,
+             #     h4("Correlation with: "),
+             #           infoBoxOutput("criterion1_card", width = 12),
+             #           infoBoxOutput("criterion2_card", width = 12),
+             #           infoBoxOutput("criterion3_card", width = 12),
+             #           infoBoxOutput("criterion4_card", width = 12)
+             #     )
+             #   )
+             #  )
+           ),
+           
+           column(width = 6,   
+                  box(width = 12,  
+                      plotOutput("work_grid_plot")
+                  ) # End of box
+           ),
+           
+           column(width = 3,
+                  
+                  box(width = 12,
+                      column(width = 6,
+                             selectizeInput("work_state", "Select a state",
+                                            choices = sort(unique(ana_data_wgeo$state)),
+                                            selected = "North Carolina")
+                      ),
+                      
+                      column(width = 6,
+                             selectizeInput("work_county", "Select a county",
+                                            choices = sort(unique(ana_data_wgeo$county)),
+                                            selected = "Richmond")
+                      ),
+                      
+                      column(width = 6,
+                             selectizeInput("work_region", "Group by Region",
+                                            choices = c("--", sort(unique(ana_data_wgeo$RegionOrg))))
+                      ),
+                      
+                      column(width = 12,
+                             actionButton("reset_work", "Reset Measures") 
+                      ),
+                      
+                      column(width = 12,
+                             selectizeInput("work_iv_top5", "Select a measure",
+                                            choices = c("Select a Measure",
+                                                        "Teen Birthrate" = "teen_birth_rate",
+                                                        "% with Grad or Prof Degree" = "per_w_grad_or_prof_degree",
+                                                        "Avg No of Mentally Unhealthy Days" = "avg_no_of_mentally_unhealthy_days"),
+                                            selected = "Teen Birthrate"),
+                             
+                             sliderInput("work_change_top5",
+                                         "If I change the selected top 5 measure by 1% ... ",
+                                         min = -20,
+                                         max = 20,
+                                         value = 0)
+                      ),
+                      
+                      column(width = 12,
+                             selectizeInput("work_iv_domain", "Filter by Key Impact / Domain",
+                                            choices = c("Key Impact", domain_lst),
+                                            selected = "Key Impact"),
+                             selectizeInput("work_iv", "Select a measure",
+                                            choices = c("Select a Measure", measure_lst_work),
+                                            selected = "Select a Measure"),
+                             sliderInput("work_change",
+                                         "If I change the selected measure by 1% ... ",
+                                         min = -20,
+                                         max = 20,
+                                         value = 0)
+                      ) # End of column
+                  ) # End of box
+           ) # End of column
+         ) # End of fluidRow
+         
+     ), # End of tabItem    
+ 
     tabItem(tabName = "playModelTable",
             
         tabBox(
@@ -363,26 +473,59 @@ body <- dashboardBody(
               DT::dataTableOutput("rest_model_table")
             ) # End of box
           ), # End of tabPanel
-          tabPanel("Routine Doc Checkup",
-            h2("Routine Doc Checkup - Weight (b) table from Stepwise Regression"),
+          tabPanel("Mentally Unhealthy Days",
+                   h2("Avg No of Mentally Unhealthy Days - Weight (b) table from Stepwise Regression"),
+                   box(width = 12,
+                       DT::dataTableOutput("avg_m_days_model_table")
+                   ) # End of box        
+          ),  # End of tabPanel
+          tabPanel("Physical Inactivity",
+            h2("Physical Inactivity - Weight (b) table from Stepwise Regression"),
             box(width = 12,
-                DT::dataTableOutput("doc_checkup_model_table")
+                DT::dataTableOutput("phy_inactive_model_table")
             ) # End of box        
           ),  # End of tabPanel
-          tabPanel("YPLL",
-            h2("Years of Potential Life lost Rate - Weight (b) table from Stepwise Regression"),
+          tabPanel("Obesity",
+            h2("% with Obesity - Weight (b) table from Stepwise Regression"),
             box(width = 12,
-                DT::dataTableOutput("ypll_model_table")
+                DT::dataTableOutput("obesity_model_table")
             ) # End of box        
-          ), # End of tabPanel
-          tabPanel("Mentally Unhealthy Days",
-            h2("Avg No of Mentally Unhealthy Days - Weight (b) table from Stepwise Regression"),
-            box(width = 12,
-                DT::dataTableOutput("avg_m_days_model_table")
-            ) # End of box        
-          )  # End of tabPanel
+          ) # End of tabPanel
         ) # End of tabBox
       
+    ), # End of tabItem
+ 
+    tabItem(tabName = "workModelTable",
+         
+         tabBox(
+           side = "left", height = "900px", width = 12,
+           selected = "Work",
+           tabPanel("Work",
+                    h2("Work Index - Weight (b) table from Stepwise Regression"),
+                    box(width = 12,
+                        DT::dataTableOutput("work_model_table")
+                    ) # End of box
+           ), # End of tabPanel
+           tabPanel("Teen Birthrate",
+                    h2("Teen Birthrate - Weight (b) table from Stepwise Regression"),
+                    box(width = 12,
+                        DT::dataTableOutput("teen_brate_model_table")
+                    ) # End of box        
+           ),  # End of tabPane
+           tabPanel("Grad or Prof Degree",
+                    h2("% Adult with Grad or Prof Degree - Weight (b) table from Stepwise Regression"),
+                    box(width = 12,
+                        DT::dataTableOutput("grad_model_table_work")
+                    ) # End of box        
+           ), # End of tabPanel
+           tabPanel("Mentally Unhealthy Days",
+                    h2("Avg No of Mentally Unhealthy Days - Weight (b) table from Stepwise Regression"),
+                    box(width = 12,
+                        DT::dataTableOutput("avg_m_days_model_table_work")
+                    ) # End of box
+           ) # End of tabPanel
+         ) # End of tabBox
+         
     ), # End of tabItem
     
     tabItem(tabName = "playIndex",
