@@ -468,4 +468,4 @@ per_w_a_disability <- dplyr::select(ana_data_full_wgeo, fips, state, county, per
 data_out <- left_join(data_out, per_w_a_disability, by = c("fips", "state", "county"))
 
 # # Save fixed Work index score into csv
-write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")
+# write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")
