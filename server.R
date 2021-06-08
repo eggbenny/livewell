@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# May 18 2021
+# June 7 2021
 
 # --- Server ----------------------------------------------
 
@@ -614,8 +614,10 @@ shinyServer(function(input, output, session) {
       z_data_wgeo <- z_data_wgeo_long %>%
         dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
         pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        ungroup() %>%
         mutate(
-          score = play_w_per_fair_or_poor_health) # Use fair and poor health as a proxy
+          score = play_w_per_fair_or_poor_health,
+          quintile = ntile(score, 5)) # Use fair and poor health as a proxy
     
       # Add physical_inactivity_back
       phy_inactive_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, population, per_physically_inactive)
@@ -723,8 +725,10 @@ shinyServer(function(input, output, session) {
       z_data_wgeo <- z_data_wgeo_long %>%
         dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
         pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        ungroup() %>%
         mutate(
-          score = play_w_avg_no_of_mentally_unhealthy_days) # Use avg_no_of_mentally_unhealthy_days as a proxy
+          score = play_w_avg_no_of_mentally_unhealthy_days,
+          quintile = ntile(score, 5)) # Use fair and poor health as a proxy) # Use avg_no_of_mentally_unhealthy_days as a proxy
       
       # Add per_insufficient_sleep back
       per_insufficient_sleep_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, per_insufficient_sleep)
@@ -832,8 +836,10 @@ shinyServer(function(input, output, session) {
       z_data_wgeo <- z_data_wgeo_long %>%
         dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
         pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+        ungroup() %>%
         mutate(
-          score = play_w_teen_birth_rate) # Use teen birth rate as a proxy
+          score = play_w_teen_birth_rate,
+          quintile = ntile(score, 5)) # Use fair and poor health as a proxy) # Use teen birth rate as a proxy
       
       # Add per_w_a_disability back
       per_w_a_disability_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, population, per_w_a_disability)
@@ -2911,6 +2917,7 @@ shinyServer(function(input, output, session) {
     
     # --- Chart and Plot ----
      
+    # Play Index Page Plots
      z_geo_w_criterion_df <- reactive({
       
        data <- play_z_geo_df()
@@ -3164,6 +3171,625 @@ shinyServer(function(input, output, session) {
       
     })
     
+    output$test_criterion_plot_a12<- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+      data <- left_join(data, income_chg_1, by = "fips")
+      
+      value <- cor(data$score, data$income_chg_at_26, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, income_chg_at_26)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$test_criterion_plot_a13<- renderPlot({
+      
+      data <- z_geo_w_criterion_df()
+      
+      data <- left_join(data, social_cx_index_1, by = "fips")
+      
+      value <- cor(data$score, data$social_cx_index, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_cx_index)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    # Rest Index Page Plots
+    rest_z_geo_w_criterion_df <- reactive({
+      
+      data <- rest_z_geo_df()
+      
+      # keep only scores and fips
+      data <- data %>% dplyr::select(fips, score)
+      
+      # Join with criterion variable
+      data <- left_join(data, criterion_ana, by = c("fips"))
+      
+      return(data)
+      
+    })
+    
+    
+    # Simple between the Play index and the four criterion
+    
+    output$rest_test_criterion_plot_1 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$years_of_potential_life_lost_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, years_of_potential_life_lost_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_2 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$avg_no_of_physically_unhealthy_days, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, avg_no_of_physically_unhealthy_days)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_3 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$avg_no_of_mentally_unhealthy_days, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, avg_no_of_mentally_unhealthy_days)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_4 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$preventable_hospitalization_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, preventable_hospitalization_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    # Play index correlation with additional measure
+    # % Uninsured (rank), 
+    # Primary Care Physicians Rate (rank),
+    # % Unemployed (rank), 
+    # 20th Percentile Income (rank), 
+    # % Single-Parent Households (rank), 
+    # Severe Housing Cost Burden (rank), 
+    # Violent Crime Rate (rank), and 
+    # Social Association Rate (rank).  Please post the result to the 'Play Index' view
+    
+    output$rest_test_criterion_plot_a1 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_uninsured, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_uninsured)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a2 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$primary_care_physicians_ratio, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, primary_care_physicians_ratio)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a3 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_unemployed, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_unemployed)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a4 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$x20th_perile_income, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, x20th_perile_income)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a5 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_single_parent_households, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_single_parent_households)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a6 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$severe_housing_cost_burden, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, severe_housing_cost_burden)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a7 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$violent_crime_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, violent_crime_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a8 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$social_association_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_association_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a9 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_adults_with_diabetes, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_adults_with_diabetes)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a10 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+      value <- cor(data$score, data$medicare_spending_age_sex_race_adjusted_4, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_age_sex_race_adjusted_4)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a11 <- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+      value <- cor(data$score, data$medicare_spending_price_age_sex_race_adjusted_5, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_price_age_sex_race_adjusted_5)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a12<- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      data <- left_join(data, income_chg_1, by = "fips")
+      
+      value <- cor(data$score, data$income_chg_at_26, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, income_chg_at_26)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$rest_test_criterion_plot_a13<- renderPlot({
+      
+      data <- rest_z_geo_w_criterion_df()
+      
+      data <- left_join(data, social_cx_index_1, by = "fips")
+      
+      value <- cor(data$score, data$social_cx_index, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_cx_index)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    
+    # Work Index Page Plots
+    work_z_geo_w_criterion_df <- reactive({
+      
+      data <- work_z_geo_df()
+      
+      # keep only scores and fips
+      data <- data %>% dplyr::select(fips, score)
+      
+      # Join with criterion variable
+      data <- left_join(data, criterion_ana, by = c("fips"))
+      
+      work_data.check <<- data
+      
+      return(data)
+      
+    })
+    
+    
+    # Simple between the Play index and the four criterion
+    
+    output$work_test_criterion_plot_1 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$years_of_potential_life_lost_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, years_of_potential_life_lost_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_2 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$avg_no_of_physically_unhealthy_days, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, avg_no_of_physically_unhealthy_days)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_3 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$avg_no_of_mentally_unhealthy_days, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, avg_no_of_mentally_unhealthy_days)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_4 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$preventable_hospitalization_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, preventable_hospitalization_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    # Play index correlation with additional measure
+    # % Uninsured (rank), 
+    # Primary Care Physicians Rate (rank),
+    # % Unemployed (rank), 
+    # 20th Percentile Income (rank), 
+    # % Single-Parent Households (rank), 
+    # Severe Housing Cost Burden (rank), 
+    # Violent Crime Rate (rank), and 
+    # Social Association Rate (rank).  Please post the result to the 'Play Index' view
+    
+    output$work_test_criterion_plot_a1 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_uninsured, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_uninsured)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a2 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$primary_care_physicians_ratio, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, primary_care_physicians_ratio)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a3 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_unemployed, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_unemployed)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a4 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$x20th_perile_income, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, x20th_perile_income)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a5 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_single_parent_households, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_single_parent_households)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a6 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$severe_housing_cost_burden, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, severe_housing_cost_burden)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a7 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$violent_crime_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, violent_crime_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a8 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$social_association_rate, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_association_rate)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a9 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      value <- cor(data$score, data$per_adults_with_diabetes, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, per_adults_with_diabetes)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a10 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+      value <- cor(data$score, data$medicare_spending_age_sex_race_adjusted_4, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_age_sex_race_adjusted_4)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a11 <- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      data <- left_join(data, data_medicare_1, by = "fips")
+      
+      value <- cor(data$score, data$medicare_spending_price_age_sex_race_adjusted_5, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, medicare_spending_price_age_sex_race_adjusted_5)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a12<- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      data <- left_join(data, income_chg_1, by = "fips")
+      
+      value <- cor(data$score, data$income_chg_at_26, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, income_chg_at_26)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
+    output$work_test_criterion_plot_a13<- renderPlot({
+      
+      data <- work_z_geo_w_criterion_df()
+      
+      data <- left_join(data, social_cx_index_1, by = "fips")
+      
+      value <- cor(data$score, data$social_cx_index, 
+                   method = "pearson", use = "complete.obs")
+      
+      ggplot(data, aes(score, social_cx_index)) +
+        geom_point() +
+        geom_smooth() +
+        labs(title = paste0("Correlation r = ", round(value, 2))) +
+        theme_minimal()
+      
+    })
+    
     # Play index scatter grid plot
     output$play_grid_plot <- renderPlot({
       
@@ -3270,27 +3896,32 @@ shinyServer(function(input, output, session) {
         }
         
         # Make plot
-        
         if (input$region == "--") {
           ggplot(data, 
-            aes(per_physically_inactive, score, color = focus)) +
-            geom_point(size = 5) +
+            aes(per_physically_inactive, score)) +
+            geom_point(aes(fill = factor(quintile),
+                            color = factor(focus)), size = 5, shape = 21) +
             geom_label_repel(aes(label = label),
                        color = "black") +
             labs(y = "Play Index (0 to 100)", x = " % of Population Physically Inactive") +
             theme_minimal() +
+            scale_fill_manual(values = quintile_colour_pal) +
+            scale_colour_manual(values = c("#ffffff00", "black")) +
             theme(legend.position = "none")   
         } else {
           ggplot(data, 
-            aes(per_physically_inactive, score, color = focus)) +
+            aes(per_physically_inactive, score)) +
             geom_point(size = 5) +
+            geom_point(aes(fill = factor(quintile),
+                           color = factor(focus)), size = 5, shape = 21) +
             geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
             geom_label_repel(aes(label = label),
                        color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
             geom_label_repel(data = region_data, aes(label = label),
                        color = "black", size = 7) +
             labs(y = "Play Index (0 to 100)", x = " % of Population Physically Inactive") +
-            theme_minimal() +
+            scale_fill_manual(values = quintile_colour_pal) +
+            scale_colour_manual(values = c("#ffffff00", "black")) +
             theme(legend.position = "none")     
         }
 
@@ -3398,26 +4029,32 @@ shinyServer(function(input, output, session) {
         if (input$rest_region == "--") {
           
           ggplot(data, 
-                 aes(per_insufficient_sleep, score, color = focus)) +
-            geom_point(size = 5) +
+                 aes(per_insufficient_sleep, score)) +
+            geom_point(aes(fill = factor(quintile),
+                           color = factor(focus)), size = 5, shape = 21) +
             geom_label_repel(aes(label = label),
                              color = "black") +
             labs(y = "Rest Index (0 to 100)", x = "% of Population with Insufficient Sleep") +
             theme_minimal() +
+            scale_fill_manual(values = quintile_colour_pal) +
+            scale_colour_manual(values = c("#ffffff00", "black")) +
             theme(legend.position = "none")
           
         } else {
           
           ggplot(data, 
-                 aes(per_insufficient_sleep, score, color = focus)) +
+            aes(per_insufficient_sleep, score)) +
             geom_point(size = 5) +
-            geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
+            geom_point(aes(fill = factor(quintile),
+                     color = factor(focus)), size = 5, shape = 21) +
             geom_label_repel(aes(label = label),
                              color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
             geom_label_repel(data = region_data, aes(label = label),
                              color = "black", size = 7) +
             labs(y = "Rest Index (0 to 100)", x = "% of Population with Insufficient Sleep") +
             theme_minimal() +
+            scale_fill_manual(values = quintile_colour_pal) +
+            scale_colour_manual(values = c("#ffffff00", "black")) +
             theme(legend.position = "none")     
         }
         
@@ -3524,29 +4161,59 @@ shinyServer(function(input, output, session) {
       }
       
       # Make plot
-      if (input$work_region == "--") {
-        
+      # Old version, just keep as copy
+      # if (input$work_region == "--") {
+      #   
+      #   ggplot(data, 
+      #          aes(per_w_a_disability, score, color = focus)) +
+      #     geom_point(size = 5) +
+      #     geom_label_repel(aes(label = label),
+      #                      color = "black") +
+      #     labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
+      #     theme_minimal() +
+      #     theme(legend.position = "none")
+      #   
+      # } else {
+      #   
+      #   ggplot(data, 
+      #          aes(per_w_a_disability, score, color = focus)) +
+      #     geom_point(size = 5) +
+      #     geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
+      #     geom_label_repel(aes(label = label),
+      #                      color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
+      #     geom_label_repel(data = region_data, aes(label = label),
+      #                      color = "black", size = 7) +
+      #     labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
+      #     theme_minimal() +
+      #     theme(legend.position = "none")     
+      # }
+      
+      if (input$region == "--") {
         ggplot(data, 
                aes(per_w_a_disability, score, color = focus)) +
-          geom_point(size = 5) +
+          geom_point(aes(fill = factor(quintile),
+                         color = factor(focus)), size = 5, shape = 21) +
           geom_label_repel(aes(label = label),
                            color = "black") +
           labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
           theme_minimal() +
-          theme(legend.position = "none")
-        
+          scale_fill_manual(values = quintile_colour_pal) +
+          scale_colour_manual(values = c("#ffffff00", "black")) +
+          theme(legend.position = "none")   
       } else {
-        
         ggplot(data, 
                aes(per_w_a_disability, score, color = focus)) +
           geom_point(size = 5) +
+          geom_point(aes(fill = factor(quintile),
+                         color = factor(focus)), size = 5, shape = 21) +
           geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
           geom_label_repel(aes(label = label),
                            color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
           geom_label_repel(data = region_data, aes(label = label),
                            color = "black", size = 7) +
           labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
-          theme_minimal() +
+          scale_fill_manual(values = quintile_colour_pal) +
+          scale_colour_manual(values = c("#ffffff00", "black")) +
           theme(legend.position = "none")     
       }
       
@@ -3691,9 +4358,11 @@ shinyServer(function(input, output, session) {
     
     
     # --- IV Contribution ---
+    
+    # Play index
     output$iv_contr_stack_plot <- renderPlot({
       
- data <- m_step_df_play %>% arrange(pratt) %>% 
+     data <- m_step_df_play %>% arrange(pratt) %>% 
         mutate(
           rank = rank(-pratt),
           order_var_name = ifelse(rank <= 3, var_name, "other")
@@ -3752,6 +4421,132 @@ shinyServer(function(input, output, session) {
       
     })
     
+
+    # Rest Index
+    output$rest_iv_contr_stack_plot <- renderPlot({
+      
+      data <- m_step_df_rest %>% arrange(pratt) %>% 
+        mutate(
+          rank = rank(-pratt),
+          order_var_name = ifelse(rank <= 3, var_name, "other")
+        ) %>%
+        filter(rank <= 3)
+      
+      # Create fake other
+      data_other <- tibble(
+        var_name = "Other",
+        pratt = 1 - sum(data$pratt))
+      
+      data <- bind_rows(data, data_other)
+      
+      ggplot(data, aes(1, pratt, fill = reorder(var_name, pratt))) + 
+        geom_bar(position = "fill", stat = "identity") +
+        geom_text(aes(label = 
+                        str_replace(paste(var_name, "\n",            
+                                          round(pratt * 100), 1), "percent_", "% ")), position = "fill", hjust = 0.5, angle = 90, vjust = 0) +
+        coord_flip() + 
+        theme_minimal() +
+        theme(
+          legend.position = "none",          
+          axis.title = element_blank(),
+          axis.text = element_blank()) +
+        scale_fill_brewer(palette = "YlGnBu")
+      
+    })
+    
+    output$rest_iv_contr_plot <- renderPlot({
+      
+      data <- m_step_df_rest %>% arrange(pratt) %>% 
+        mutate(
+          rank = rank(-pratt),
+          order_var_name = ifelse(rank <= 3, var_name, "other")
+        ) %>%
+        filter(rank <= 3)
+      
+      # Create fake other
+      data_other <- tibble(
+        var_name = "Other",
+        pratt = 1 - sum(data$pratt))
+      
+      data <- bind_rows(data, data_other)
+      
+      ggplot(data, aes(reorder(var_name, -pratt), 1, fill = pratt)) + 
+        geom_tile() + 
+        geom_text(aes(label = 
+                        str_replace(paste(var_name, "\n",            
+                                          round(pratt * 100), 1), "percent_", "% "))) +
+        theme_minimal() +
+        theme(
+          legend.position = "none",          
+          axis.title = element_blank(),
+          axis.text = element_blank()) +
+        scale_fill_gradient(low = "grey", high = "yellow")
+      
+    })
+    
+    
+    # Rest Index
+    output$work_iv_contr_stack_plot <- renderPlot({
+      
+      data <- m_step_df_work %>% arrange(pratt) %>% 
+        mutate(
+          rank = rank(-pratt),
+          order_var_name = ifelse(rank <= 3, var_name, "other")
+        ) %>%
+        filter(rank <= 3)
+      
+      # Create fake other
+      data_other <- tibble(
+        var_name = "Other",
+        pratt = 1 - sum(data$pratt))
+      
+      data <- bind_rows(data, data_other)
+      
+      ggplot(data, aes(1, pratt, fill = reorder(var_name, pratt))) + 
+        geom_bar(position = "fill", stat = "identity") +
+        geom_text(aes(label = 
+                        str_replace(paste(var_name, "\n",            
+                                          round(pratt * 100), 1), "percent_", "% ")), position = "fill", hjust = 0.5, angle = 90, vjust = 0) +
+        coord_flip() + 
+        theme_minimal() +
+        theme(
+          legend.position = "none",          
+          axis.title = element_blank(),
+          axis.text = element_blank()) +
+        scale_fill_brewer(palette = "YlGnBu")
+      
+    })
+    
+    output$work_iv_contr_plot <- renderPlot({
+      
+      data <- m_step_df_work %>% arrange(pratt) %>% 
+        mutate(
+          rank = rank(-pratt),
+          order_var_name = ifelse(rank <= 3, var_name, "other")
+        ) %>%
+        filter(rank <= 3)
+      
+      # Create fake other
+      data_other <- tibble(
+        var_name = "Other",
+        pratt = 1 - sum(data$pratt))
+      
+      data <- bind_rows(data, data_other)
+      
+      ggplot(data, aes(reorder(var_name, -pratt), 1, fill = pratt)) + 
+        geom_tile() + 
+        geom_text(aes(label = 
+                        str_replace(paste(var_name, "\n",            
+                                          round(pratt * 100), 1), "percent_", "% "))) +
+        theme_minimal() +
+        theme(
+          legend.position = "none",          
+          axis.title = element_blank(),
+          axis.text = element_blank()) +
+        scale_fill_gradient(low = "grey", high = "yellow")
+      
+    })
+    
     # --- Test Play Index ---
     output$play_index_hist <- renderPlot({
 
@@ -3785,21 +4580,123 @@ shinyServer(function(input, output, session) {
     })
     
     # Map of Play Index Quintiles
-    output$map <- renderPlot({
+    output$play_map <- renderPlot({
       # see https://urban-institute.medium.com/how-to-create-state-and-county-maps-easily-in-r-577d29300bb2
     map_data <- left_join(play_fixed_z_data_wgeo, countydata, by = c("fips" = "county_fips")) %>%
       left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+  
     
-    ggplot(map_data, aes(long, lat, group = fips, fill = quintile)) +
-      geom_polygon(color = NA) +
+    ggplot(map_data, aes(long, lat, group = fips, fill = factor(quintile))) +
+      geom_polygon(color = "black") +
       coord_map() +
       labs(fill = "Play Index") +
       theme_minimal() +
       scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
-      guides(fill = guide_colourbar(nbbin = 100)) +
+      scale_fill_manual(values = quintile_colour_pal) +
+      # guides(fill = guide_colourbar(nbbin = 100)) +
       theme(legend.position = "bottom",
             legend.key.width = unit(7, "cm"))
     
+    })
+    
+    
+    output$rest_index_hist <- renderPlot({
+      
+      data <- rest_z_geo_df()
+      
+      ggplot(data, aes(score)) +
+        geom_histogram() +
+        theme_minimal()
+      
+    })
+    
+    output$rest_index_boxplot <- renderPlot({
+      
+      data <- rest_z_geo_df()
+      
+      ggplot(data, aes(score)) +
+        geom_boxplot() +
+        theme_minimal()
+      
+    })
+    
+    # Map of Rest Index Quintiles
+    output$rest_map <- renderPlot({
+      # see https://urban-institute.medium.com/how-to-create-state-and-county-maps-easily-in-r-577d29300bb2
+      map_data <- left_join(rest_fixed_z_data_wgeo, countydata, by = c("fips" = "county_fips")) %>%
+        left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+      
+      ggplot(map_data, aes(long, lat, group = fips, fill = factor(quintile))) +
+        geom_polygon(color = "black") +
+        coord_map() +
+        labs(fill = "Rest Index") +
+        theme_minimal() +
+        scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+        scale_fill_manual(values = quintile_colour_pal) +
+        # guides(fill = guide_colourbar(nbbin = 100)) +
+        theme(legend.position = "bottom",
+              legend.key.width = unit(7, "cm"))
+    })
+    
+    
+    output$work_index_hist <- renderPlot({
+      
+      data <- work_z_geo_df()
+      
+      ggplot(data, aes(score)) +
+        geom_histogram() +
+        theme_minimal()
+      
+    })
+    
+    output$work_index_boxplot <- renderPlot({
+      
+      data <- work_z_geo_df()
+      
+      ggplot(data, aes(score)) +
+        geom_boxplot() +
+        theme_minimal()
+      
+    })
+    
+    # Map of Work Index Quintiles
+    output$work_map <- renderPlot({
+      # see https://urban-institute.medium.com/how-to-create-state-and-county-maps-easily-in-r-577d29300bb2
+      map_data <- left_join(work_fixed_z_data_wgeo, countydata, by = c("fips" = "county_fips")) %>%
+        left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+      
+      ggplot(map_data, aes(long, lat, group = fips, fill = factor(quintile))) +
+        geom_polygon(color = "black") +
+        coord_map() +
+        labs(fill = "Rest Index") +
+        theme_minimal() +
+        scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+        scale_fill_manual(values = quintile_colour_pal) +
+        # guides(fill = guide_colourbar(nbbin = 100)) +
+        theme(legend.position = "bottom",
+              legend.key.width = unit(7, "cm"))
+      
+    })
+    
+    # Map of Cross Index Quintiles
+    output$cross_index_map <- renderPlot({
+      
+      map_data <- cross_map_data  %>%
+        left_join(countydata, by = c("fips" = "county_fips")) %>%
+        left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+
+      
+      ggplot(map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
+        geom_polygon(color = "black") +
+        coord_map() +
+        labs(fill = "Rest Index") +
+        theme_minimal() +
+        scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+        scale_fill_manual(values = quintile_colour_pal) +
+        # guides(fill = guide_colourbar(nbbin = 100)) +
+        theme(legend.position = "bottom",
+              legend.key.width = unit(7, "cm"))
+      
     })
     
 })

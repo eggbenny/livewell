@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# May 17 2021
+# June 7 2021
 
 
 # --- ui --------------------------------------------------
@@ -28,6 +28,10 @@ sidebar <- dashboardSidebar(
              tabName = "workModelTable"),
     menuItem("Play Index", icon = icon("bar-chart-o"),
              tabName = "playIndex"),
+    menuItem("Rest Index", icon = icon("bar-chart-o"),
+             tabName = "restIndex"),
+    menuItem("Work Index", icon = icon("bar-chart-o"),
+             tabName = "workIndex"),
     menuItem("Map", icon = icon("map-marked"),
              tabName = "map"),
     br(),
@@ -609,6 +613,13 @@ body <- dashboardBody(
       ), # End of box
       box(width = 6,
         plotOutput("test_criterion_plot_a11")
+      ), # End of box
+      
+      box(width = 6,
+          plotOutput("test_criterion_plot_a12")
+      ), # End of box
+      box(width = 6,
+          plotOutput("test_criterion_plot_a13")
       ) # End of box
       
       
@@ -616,14 +627,229 @@ body <- dashboardBody(
      ) # End of fluidRow
       
     ), # End of tabItem
+ 
+     tabItem(tabName = "restIndex",
+         
+         fluidRow(
+           column(width = 12,
+                  h2("Enablers of Rest"),
+                  
+                  box(width = 12,
+                      column(width = 6,
+                             plotOutput("rest_iv_contr_plot", height = 100)
+                      ),
+                      column(width = 6,
+                             plotOutput("rest_iv_contr_stack_plot", height = 100)
+                      )
+                  ), # End of box
+                  
+                  h2("Rest Index Distribution"),
+                  
+                  # box(width = 12,
+                  #   DT::dataTableOutput("play_table")
+                  # ),
+                  
+                  box(width = 6,
+                      plotOutput("rest_index_hist")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_index_boxplot")
+                  ), # End of box
+                  
+                  h2("Rest Index Correlation With Criteria"),
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_1")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_2")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_3")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_4")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a1")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a2")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a3")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a4")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a5")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a6")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a7")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a8")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a9")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a10")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a11")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a12")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_test_criterion_plot_a13")
+                  ) # End of box
+                  
+                  
+           ) # End of column
+         ) # End of fluidRow
+         
+      ), # End of tabItem
+ 
+    tabItem(tabName = "workIndex",
+         
+         fluidRow(
+           column(width = 12,
+                  h2("Enablers of Work"),
+                  
+                  box(width = 12,
+                      column(width = 6,
+                             plotOutput("work_iv_contr_plot", height = 100)
+                      ),
+                      column(width = 6,
+                             plotOutput("work_iv_contr_stack_plot", height = 100)
+                      )
+                  ), # End of box
+                  
+                  h2("Work Index Distribution"),
+                  
+                  # box(width = 12,
+                  #   DT::dataTableOutput("play_table")
+                  # ),
+                  
+                  box(width = 6,
+                      plotOutput("work_index_hist")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("work_index_boxplot")
+                  ), # End of box
+                  
+                  h2("Work Index Correlation With Criteria"),
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_1")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_2")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_3")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_4")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a1")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a2")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a3")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a4")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a5")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a6")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a7")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a8")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a9")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a10")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a11")
+                  ), # End of box
+                  
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a12")
+                  ), # End of box
+                  box(width = 6,
+                      plotOutput("rest_test_criterion_plot_a13")
+                  ) # End of box
+                  
+                  
+           ) # End of column
+         ) # End of fluidRow
+         
+      ), # End of tabItem
     
     tabItem(tabName = "map",
             
-      h2("Play Index County Map (Quintiles)"),
-      
-      box(width = 12,
-        plotOutput("map", height = "725px")
-      ) # End of box
+      tabBox(
+        side = "left", height = "900px", width = 12,
+        selected = "Play",
+        tabPanel("Play",
+                 h2("Play Index County Map (Quintiles)"),
+                 box(width = 12,
+                     plotOutput("play_map", height = "725px")
+                 ) # End of box
+        ), # End of tabPanel
+        tabPanel("Rest",
+                 h2("Play Index County Map (Quintiles)"),
+                 box(width = 12,
+                     plotOutput("rest_map", height = "725px")
+                 ) # End of box        
+        ),  # End of tabPanel
+        tabPanel("Work",
+                 h2("Work Index County Map (Quintiles)"),
+                 box(width = 12,
+                     plotOutput("work_map", height = "725px")
+                 ) # End of box        
+        ), # End of tabPanel
+        tabPanel("Cross Indices",
+                 h2("Cross Index (Quintiles 1 and 2)"),
+                 box(width = 12,
+                     plotOutput("cross_index_map", height = "725px")
+                 ) # End of box        
+        ) # End of tabPanel 
+      ) # End of tabBox
       
     ) # End of tabItem
     

@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# May 18 2021
+# June 7 2021
 
 
 # --- Load packages ---------------------------------------
@@ -48,6 +48,12 @@ load("www/main_ana_data_df.RData")
 load("www/temp_extra_data_labour.RData")
 load("www/temp_extra_data_medicare.RData")
 
+# social Connectedness index
+load("www/social_cx_index.RData")
+
+# Income change
+load("www/income_chg_at_26.RData")
+
 # load Domain Map
 load("www/domain_map.RData")
 
@@ -78,6 +84,11 @@ load("www/m_step_df_teen_brate.RData")
 load("www/m_step_df_avg_mdays.RData")
 
 
+
+# --- Some Format Setting ------------------------------------
+
+quintile_colour_pal <- c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a")
+
 # --- Calculate Index Score ----------------------------------
 
 # Add region
@@ -94,6 +105,42 @@ ana_data_wgeo_long <- ana_data_wgeo %>%
 # Join Domain map
 ana_data_wgeo_long <- ana_data_wgeo_long %>%
   left_join(domain_map, by = "var_name")
+
+# Setup criterion df for the index correlation page
+
+criterion_ana <- ana_data_full_wgeo %>%
+  dplyr::select(fips, state, county, 
+years_of_potential_life_lost_rate,
+avg_no_of_physically_unhealthy_days,
+avg_no_of_mentally_unhealthy_days,
+preventable_hospitalization_rate,
+per_uninsured,
+primary_care_physicians_ratio,
+per_unemployed,
+x20th_perile_income,
+per_single_parent_households,
+severe_housing_cost_burden,
+violent_crime_rate,
+social_association_rate,
+per_adults_with_diabetes)
+
+criterion_extra_1 <- data_medicare_1 %>%
+  dplyr::select(fips, 
+  medicare_spending_age_sex_race_adjusted_4,
+  medicare_spending_price_age_sex_race_adjusted_5)
+
+criterion_extra_2 <- income_chg_1 %>%
+  dplyr::select(fips, 
+income_chg_at_26)
+
+criterion_extra_3 <- social_cx_index_1 %>%
+  dplyr::select(fips,
+social_cx_index)
+
+criterion <- full_join(criterion_ana, criterion_extra_1, by = "fips") %>%
+  full_join(criterion_extra_2, by = "fips") %>%
+  full_join(criterion_extra_3, by = "fips")
+
 
 ana_data_criterion <- ana_data_full_wgeo %>%
   dplyr::select(fips, state, county, 
@@ -115,6 +162,48 @@ ana_data_criterion <- ana_data_full_wgeo %>%
          social_association_rate
   )
 
+
+rest_ana_data_criterion <- ana_data_full_wgeo %>%
+  dplyr::select(fips, state, county, 
+                years_of_potential_life_lost_rate,
+                # average_number_of_physically_unhealthy_days,
+                avg_no_of_physically_unhealthy_days,
+                avg_no_of_mentally_unhealthy_days,
+                preventable_hospitalization_rate,
+                per_adults_with_diabetes,
+                primary_care_physicians_ratio,
+                per_unemployed,
+                per_single_parent_households,
+                age_adjusted_death_rate,
+                social_association_rate,
+                severe_housing_cost_burden,
+                violent_crime_rate,
+                x20th_perile_income,
+                age_adjusted_death_rate,
+                social_association_rate
+  )
+
+work_ana_data_criterion <- ana_data_full_wgeo %>%
+  dplyr::select(fips, state, county, 
+                years_of_potential_life_lost_rate,
+                # average_number_of_physically_unhealthy_days,
+                avg_no_of_physically_unhealthy_days,
+                # avg_no_of_mentally_unhealthy_days,
+                # preventable_hospitalization_rate,
+                per_adults_with_diabetes,
+                primary_care_physicians_ratio,
+                # per_unemployed,
+                # per_single_parent_households,
+                age_adjusted_death_rate,
+                social_association_rate,
+                # severe_housing_cost_burden,
+                violent_crime_rate,
+                x20th_perile_income,
+                age_adjusted_death_rate,
+                social_association_rate
+  )
+
+
 # Join with step-wise full table to get the weight
 play_ana_data_wgeo_long <- ana_data_wgeo_long %>%
   left_join(m_step_df_play, by = "var_name")
@@ -130,6 +219,7 @@ work_ana_data_wgeo_long <- ana_data_wgeo_long %>%
 
 # Domain lst
 domain_lst <- filter(domain_map, !is.na(Domain)) %>%
+  filter(Domain != "Demographics") %>%
   distinct(Domain) %>% unlist() %>% as.character()
 
 
@@ -203,8 +293,8 @@ domain_lst_grad <- filter(m_step_df_grad, var_name != "(Intercept)") %>%
   as.character()
 
 measure_all_lst_grad <- measure_lst_grad
-measure_top3_lst_grad <- measure_lst_grad[c(1:3)]
-measure_lst_grad <- measure_lst_grad[c(-1:-3)]
+measure_top3_lst_grad <- measure_lst_grad[c(1,3,4)]
+measure_lst_grad <- measure_lst_grad[c(-1,-3,-4)]
 
 # Measure lst for Diabetes as Outcome
 measure_lst_diabetes <- filter(m_step_df_diabetes, var_name != "(Intercept)") %>%
@@ -469,3 +559,29 @@ data_out <- left_join(data_out, per_w_a_disability, by = c("fips", "state", "cou
 
 # # Save fixed Work index score into csv
 # write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")
+
+# Create cross indices map data
+play_map_data <- play_fixed_z_data_wgeo %>%
+  rename(play_quintile = quintile) %>%
+  dplyr::select(fips, play_quintile)
+
+rest_map_data <- rest_fixed_z_data_wgeo %>%
+  rename(rest_quintile = quintile) %>%
+  dplyr::select(fips, rest_quintile)
+
+work_map_data <- work_fixed_z_data_wgeo %>%
+  rename(work_quintile = quintile) %>%
+  dplyr::select(fips, work_quintile)
+
+cross_map_data <- full_join(play_map_data, rest_map_data, by = "fips") %>%
+  full_join(work_map_data, by = "fips")
+
+cross_map_data <- cross_map_data %>%
+  mutate(
+    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 1 & work_quintile == 1, 1, NA),
+    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 2 & work_quintile == 2, 2, all_quintile))
+
+cross_map_data <- left_join(dplyr::select(play_fixed_z_data_wgeo, fips, state, county), 
+                               cross_map_data, by = "fips")
+
+# write_csv(cross_map_data, "../Beta/data/cross_indices_map.csv", na = "")
