@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# June 7 2021
+# June 10 2021
 
 
 # --- ui --------------------------------------------------
@@ -832,7 +832,7 @@ body <- dashboardBody(
                  ) # End of box
         ), # End of tabPanel
         tabPanel("Rest",
-                 h2("Play Index County Map (Quintiles)"),
+                 h2("Rest Index County Map (Quintiles)"),
                  box(width = 12,
                      plotOutput("rest_map", height = "725px")
                  ) # End of box        
@@ -844,7 +844,7 @@ body <- dashboardBody(
                  ) # End of box        
         ), # End of tabPanel
         tabPanel("Cross Indices",
-                 h2("Cross Index (Quintiles 1 and 2)"),
+                 h2("Cross Indices (Quintiles 1, 2, Mixed 1 & 2, and Any 3)"),
                  box(width = 12,
                      plotOutput("cross_index_map", height = "725px")
                  ) # End of box        

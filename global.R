@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# June 7 2021
+# June 10 2021
 
 
 # --- Load packages ---------------------------------------
@@ -577,9 +577,17 @@ cross_map_data <- full_join(play_map_data, rest_map_data, by = "fips") %>%
   full_join(work_map_data, by = "fips")
 
 cross_map_data <- cross_map_data %>%
+  rowwise() %>%
   mutate(
-    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 1 & work_quintile == 1, 1, NA),
-    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 2 & work_quintile == 2, 2, all_quintile))
+    sum_check = play_quintile + rest_quintile + work_quintile,
+    all_quintile = NA,
+    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 1 & work_quintile == 1, 1, all_quintile),
+    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 2 & work_quintile == 2, 2, all_quintile),
+    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 1 & work_quintile == 2, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 2 & work_quintile == 2, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 1 & rest_quintile == 2 & work_quintile == 1, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 1 & work_quintile == 1, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 3 | rest_quintile == 3 | work_quintile == 3, 4, all_quintile))
 
 cross_map_data <- left_join(dplyr::select(play_fixed_z_data_wgeo, fips, state, county), 
                                cross_map_data, by = "fips")

@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# June 7 2021
+# June 10 2021
 
 # --- Server ----------------------------------------------
 
@@ -4668,7 +4668,7 @@ shinyServer(function(input, output, session) {
       ggplot(map_data, aes(long, lat, group = fips, fill = factor(quintile))) +
         geom_polygon(color = "black") +
         coord_map() +
-        labs(fill = "Rest Index") +
+        labs(fill = "Work Index") +
         theme_minimal() +
         scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
         scale_fill_manual(values = quintile_colour_pal) +
@@ -4689,13 +4689,13 @@ shinyServer(function(input, output, session) {
       ggplot(map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
         geom_polygon(color = "black") +
         coord_map() +
-        labs(fill = "Rest Index") +
+        labs(fill = "Cross Indices") +
         theme_minimal() +
         scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
         scale_fill_manual(values = quintile_colour_pal) +
         # guides(fill = guide_colourbar(nbbin = 100)) +
         theme(legend.position = "bottom",
-              legend.key.width = unit(7, "cm"))
+              legend.key.width = unit(3, "cm"))
       
     })
     
