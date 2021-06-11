@@ -587,9 +587,75 @@ cross_map_data <- cross_map_data %>%
     all_quintile = ifelse(play_quintile == 1 & rest_quintile == 2 & work_quintile == 2, 3, all_quintile),
     all_quintile = ifelse(play_quintile == 1 & rest_quintile == 2 & work_quintile == 1, 3, all_quintile),
     all_quintile = ifelse(play_quintile == 2 & rest_quintile == 1 & work_quintile == 1, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 2 & work_quintile == 1, 3, all_quintile),
+    all_quintile = ifelse(play_quintile == 2 & rest_quintile == 1 & work_quintile == 2, 3, all_quintile),
     all_quintile = ifelse(play_quintile == 3 | rest_quintile == 3 | work_quintile == 3, 4, all_quintile))
 
 cross_map_data <- left_join(dplyr::select(play_fixed_z_data_wgeo, fips, state, county), 
                                cross_map_data, by = "fips")
+
+# # make cross map to remove after
+# map_data <- cross_map_data  %>%
+#   left_join(countydata, by = c("fips" = "county_fips")) %>%
+#   left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+# 
+# 
+# ggplot(map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
+#   geom_polygon(color = "black") +
+#   coord_map() +
+#   labs(fill = "Cross Indices") +
+#   theme_minimal() +
+#   scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+#   scale_fill_manual(values = quintile_colour_pal) +
+#   # guides(fill = guide_colourbar(nbbin = 100)) +
+#   theme(legend.position = "bottom",
+#         legend.key.width = unit(3, "cm"))
+# 
+# # make ak map temp to remove after
+# 
+# ak_map <- read_excel(file.choose())
+# 
+# ak_map <- ak_map %>%
+#   dplyr::mutate(
+#     length = nchar(fips),
+#     fips = as.character(fips),
+#     fips = ifelse(length == 4, paste0("0", fips), fips)) %>%
+#   dplyr::select(-length)
+# 
+# ak_map2 <- left_join(ak_map, cross_map_data, by = "fips")
+# 
+# ak_map2 <- ak_map2 %>%
+#   mutate(
+#     `All Quintile` = ifelse(is.na(`Second Map Indicator`), NA, `All Quintile`),
+#     all_quintile = ifelse(is.na(`Second Map Indicator`), NA, all_quintile))
+# 
+# ak_map_data <- ak_map2  %>%
+#   left_join(countydata, by = c("fips" = "county_fips")) %>%
+#   left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
+# 
+# 
+# ggplot(ak_map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
+#   geom_polygon(color = "black") +
+#   coord_map() +
+#   labs(fill = "Cross Indices") +
+#   theme_minimal() +
+#   scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+#   scale_fill_manual(values = quintile_colour_pal) +
+#   # guides(fill = guide_colourbar(nbbin = 100)) +
+#   theme(legend.position = "bottom",
+#         legend.key.width = unit(3, "cm"))
+# 
+# ak_quintile_colour_pal <- c("#377eb8", "#e41a1c", "#ffff99", "#ff7f00")
+# 
+# ggplot(ak_map_data, aes(long, lat, group = fips, fill = factor(`All Quintile`))) +
+#   geom_polygon(color = "black") +
+#   coord_map() +
+#   labs(fill = "Cross Indices") +
+#   theme_minimal() +
+#   scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+#   scale_fill_manual(values = ak_quintile_colour_pal) +
+#   # guides(fill = guide_colourbar(nbbin = 100)) +
+#   theme(legend.position = "bottom",
+#         legend.key.width = unit(3, "cm"))
 
 # write_csv(cross_map_data, "../Beta/data/cross_indices_map.csv", na = "")
