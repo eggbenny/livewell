@@ -110,32 +110,32 @@ ana_data_wgeo_long <- ana_data_wgeo_long %>%
 
 criterion_ana <- ana_data_full_wgeo %>%
   dplyr::select(fips, state, county, 
-years_of_potential_life_lost_rate,
-avg_no_of_physically_unhealthy_days,
-avg_no_of_mentally_unhealthy_days,
-preventable_hospitalization_rate,
-per_uninsured,
-primary_care_physicians_ratio,
-per_unemployed,
-x20th_perile_income,
-per_single_parent_households,
-severe_housing_cost_burden,
-violent_crime_rate,
-social_association_rate,
-per_adults_with_diabetes)
+                years_of_potential_life_lost_rate,
+                avg_no_of_physically_unhealthy_days,
+                avg_no_of_mentally_unhealthy_days,
+                preventable_hospitalization_rate,
+                per_uninsured,
+                primary_care_physicians_ratio,
+                per_unemployed,
+                x20th_perile_income,
+                per_single_parent_households,
+                severe_housing_cost_burden,
+                violent_crime_rate,
+                social_association_rate,
+                per_adults_with_diabetes)
 
 criterion_extra_1 <- data_medicare_1 %>%
   dplyr::select(fips, 
-  medicare_spending_age_sex_race_adjusted_4,
-  medicare_spending_price_age_sex_race_adjusted_5)
+                medicare_spending_age_sex_race_adjusted_4,
+                medicare_spending_price_age_sex_race_adjusted_5)
 
 criterion_extra_2 <- income_chg_1 %>%
   dplyr::select(fips, 
-income_chg_at_26)
+                income_chg_at_26)
 
 criterion_extra_3 <- social_cx_index_1 %>%
   dplyr::select(fips,
-social_cx_index)
+                social_cx_index)
 
 criterion <- full_join(criterion_ana, criterion_extra_1, by = "fips") %>%
   full_join(criterion_extra_2, by = "fips") %>%
@@ -144,22 +144,22 @@ criterion <- full_join(criterion_ana, criterion_extra_1, by = "fips") %>%
 
 ana_data_criterion <- ana_data_full_wgeo %>%
   dplyr::select(fips, state, county, 
-         # years_of_potential_life_lost_rate,
-         # average_number_of_physically_unhealthy_days,
-         avg_no_of_physically_unhealthy_days,
-         avg_no_of_mentally_unhealthy_days,
-         # preventable_hospitalization_rate,
-         # per_adults_with_diabetes,
-         primary_care_physicians_ratio,
-         per_unemployed,
-         per_single_parent_households,
-         age_adjusted_death_rate,
-         social_association_rate,
-         severe_housing_cost_burden,
-         violent_crime_rate,
-         x20th_perile_income,
-         age_adjusted_death_rate,
-         social_association_rate
+                # years_of_potential_life_lost_rate,
+                # average_number_of_physically_unhealthy_days,
+                avg_no_of_physically_unhealthy_days,
+                avg_no_of_mentally_unhealthy_days,
+                # preventable_hospitalization_rate,
+                # per_adults_with_diabetes,
+                primary_care_physicians_ratio,
+                per_unemployed,
+                per_single_parent_households,
+                age_adjusted_death_rate,
+                social_association_rate,
+                severe_housing_cost_burden,
+                violent_crime_rate,
+                x20th_perile_income,
+                age_adjusted_death_rate,
+                social_association_rate
   )
 
 
@@ -440,32 +440,32 @@ measure_lst_teen_brate <- measure_lst_teen_brate[-c(1, 3, 5)]
 
 # Calculate Index with Fixed Slider values
 play_fixed_z_data_wgeo_long <- play_ana_data_wgeo_long %>%
-        ungroup() %>%
-        group_by(var_name) %>%
-        mutate(
-          z_value = as.numeric(scale(value)),
-          score = scales::rescale(z_value, c(0, 100)),
-          score = ifelse(Direction == "N", 100 - score, score),
-          rank_value = rank(-score),
-          per_rank_value = percent_rank(score) * 100,
-          play = ifelse(!is.na(b), 1, 0)) %>%
-        filter(play == 1) %>%
-        group_by(fips, state, county) %>%
-        mutate(
-          play_uw = mean(score, na.rm = T),
-          play_w = weighted.mean(score, pratt, na.rm = T)
-        ) %>%
-        dplyr::select(-play)
-      
+  ungroup() %>%
+  group_by(var_name) %>%
+  mutate(
+    z_value = as.numeric(scale(value)),
+    score = scales::rescale(z_value, c(0, 100)),
+    score = ifelse(Direction == "N", 100 - score, score),
+    rank_value = rank(-score),
+    per_rank_value = percent_rank(score) * 100,
+    play = ifelse(!is.na(b), 1, 0)) %>%
+  filter(play == 1) %>%
+  group_by(fips, state, county) %>%
+  mutate(
+    play_uw = mean(score, na.rm = T),
+    play_w = weighted.mean(score, pratt, na.rm = T)
+  ) %>%
+  dplyr::select(-play)
+
 # Convert back to wide format
 play_fixed_z_data_wgeo <- play_fixed_z_data_wgeo_long %>%
-        dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
-        pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
-        ungroup() %>%
-        mutate(
-          score = play_w_per_fair_or_poor_health,
-          quintile = ntile(score, 5)) # Use fair and poor health as a proxy
-      
+  dplyr::select(fips, state, county, var_name, value, z_value, score, play_uw, play_w) %>%
+  pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, play_uw, play_w)) %>%
+  ungroup() %>%
+  mutate(
+    score = play_w_per_fair_or_poor_health,
+    quintile = ntile(score, 5)) # Use fair and poor health as a proxy
+
 names(play_fixed_z_data_wgeo) <- str_replace_all(names(play_fixed_z_data_wgeo), "^value_", "")
 
 # Data All out
@@ -481,31 +481,31 @@ data_out <- left_join(data_out, phy_inactive_wgeo, by = c("fips", "state", "coun
 
 # Rest (aka Home Index dump data outs)
 rest_fixed_z_data_wgeo_long <- rest_ana_data_wgeo_long %>%
-        ungroup() %>%
-        group_by(var_name) %>%
-        mutate(
-          z_value = as.numeric(scale(value)),
-          score = scales::rescale(z_value, c(0, 100)),
-          score = ifelse(Direction == "N", 100 - score, score),
-          rank_value = rank(-score),
-          per_rank_value = percent_rank(score) * 100,
-          rest = ifelse(!is.na(b), 1, 0)) %>%
-        filter(rest == 1) %>%
-        group_by(fips, state, county) %>%
-        mutate(
-          rest_uw = mean(score, na.rm = T),
-          rest_w = weighted.mean(score, pratt, na.rm = T)
-        )
-      
+  ungroup() %>%
+  group_by(var_name) %>%
+  mutate(
+    z_value = as.numeric(scale(value)),
+    score = scales::rescale(z_value, c(0, 100)),
+    score = ifelse(Direction == "N", 100 - score, score),
+    rank_value = rank(-score),
+    per_rank_value = percent_rank(score) * 100,
+    rest = ifelse(!is.na(b), 1, 0)) %>%
+  filter(rest == 1) %>%
+  group_by(fips, state, county) %>%
+  mutate(
+    rest_uw = mean(score, na.rm = T),
+    rest_w = weighted.mean(score, pratt, na.rm = T)
+  )
+
 # Convert back to wide format
 rest_fixed_z_data_wgeo <- rest_fixed_z_data_wgeo_long %>%
-        dplyr::select(fips, state, county, var_name, value, z_value, score, rest_uw, rest_w) %>%
-        pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, rest_uw, rest_w)) %>%
-        ungroup() %>%
-        mutate(
-          score = rest_w_avg_no_of_mentally_unhealthy_days ,
-          quintile = ntile(score, 5)) # avg_no_of_mentally_unhealthy_days as a proxy
-      
+  dplyr::select(fips, state, county, var_name, value, z_value, score, rest_uw, rest_w) %>%
+  pivot_wider(names_from = "var_name", values_from = c(value, z_value, score, rest_uw, rest_w)) %>%
+  ungroup() %>%
+  mutate(
+    score = rest_w_avg_no_of_mentally_unhealthy_days ,
+    quintile = ntile(score, 5)) # avg_no_of_mentally_unhealthy_days as a proxy
+
 names(rest_fixed_z_data_wgeo) <- str_replace_all(names(rest_fixed_z_data_wgeo), "^value_", "")
 
 # Data All out
@@ -592,7 +592,26 @@ cross_map_data <- cross_map_data %>%
     all_quintile = ifelse(play_quintile == 3 | rest_quintile == 3 | work_quintile == 3, 4, all_quintile))
 
 cross_map_data <- left_join(dplyr::select(play_fixed_z_data_wgeo, fips, state, county), 
-                               cross_map_data, by = "fips")
+                            cross_map_data, by = "fips")
+
+quintile_colour_pal_df <- tibble(
+    quintile = c(1, 2, 3, 4, 5),
+    qcolor = c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a"))
+quintile_colour_pal_lst <- c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a")
+
+# new_cross_map <- read_excel(file.choose())
+# new_cross_map <- read_excel("../Beta/data/About Us cross_indices_map v2.xlsx")
+load("www/About Us cross_indices_map v2.Rdata")
+#
+new_cross_map <- new_cross_map %>%
+  dplyr::mutate(
+    length = nchar(fips),
+    fips = as.character(fips),
+    fips = ifelse(length == 4, paste0("0", fips), fips)) %>%
+  dplyr::select(-length)
+
+new_cross_map <- new_cross_map %>% left_join(quintile_colour_pal_df,
+                                             by = c("US All Quintile Map" = "quintile"))
 
 # # make cross map to remove after
 # map_data <- cross_map_data  %>%

@@ -843,8 +843,8 @@ body <- dashboardBody(
                      plotOutput("work_map", height = "725px")
                  ) # End of box        
         ), # End of tabPanel
-        tabPanel("Cross Indices",
-                 h2("Cross Indices (Quintiles 1, 2, Mixed 1 & 2, and Any 3)"),
+        tabPanel("Opportunity to Thrive Index",
+                 h2("Opportunity to Thrive Index"),
                  box(width = 12,
                      plotOutput("cross_index_map", height = "725px")
                  ) # End of box        

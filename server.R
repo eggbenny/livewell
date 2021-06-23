@@ -4681,21 +4681,33 @@ shinyServer(function(input, output, session) {
     # Map of Cross Index Quintiles
     output$cross_index_map <- renderPlot({
       
-      map_data <- cross_map_data  %>%
+      map_data <- new_cross_map %>%
         left_join(countydata, by = c("fips" = "county_fips")) %>%
         left_join(urbnmapr::counties, by = c("fips" = "county_fips"))
 
-      
-      ggplot(map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
+      ggplot(map_data, aes(long, lat, group = fips, fill = factor(`US All Quintile Map`))) +
         geom_polygon(color = "black") +
         coord_map() +
         labs(fill = "Cross Indices") +
         theme_minimal() +
-        scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
-        scale_fill_manual(values = quintile_colour_pal) +
-        # guides(fill = guide_colourbar(nbbin = 100)) +
+        # scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+        # scale_fill_manual(values = quintile_colour_pal) +
+        scale_fill_manual(
+          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
         theme(legend.position = "bottom",
               legend.key.width = unit(3, "cm"))
+      
+      # old map
+      # ggplot(map_data, aes(long, lat, group = fips, fill = factor(all_quintile))) +
+      #   geom_polygon(color = "black") +
+      #   coord_map() +
+      #   labs(fill = "Cross Indices") +
+      #   theme_minimal() +
+      #   scale_fill_continuous(limits = c(1, 5), breaks = seq(1, 5, 1)) +
+      #   scale_fill_manual(values = quintile_colour_pal) +
+      #   # guides(fill = guide_colourbar(nbbin = 100)) +
+      #   theme(legend.position = "bottom",
+      #         legend.key.width = unit(3, "cm"))
       
     })
     
