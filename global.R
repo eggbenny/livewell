@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# June 10 2021
+# June 28 2021
 
 
 # --- Load packages ---------------------------------------
@@ -232,7 +232,7 @@ measure_lst_play <- filter(m_step_df_play, var_name != "(Intercept)") %>%
 
 measure_all_lst_play <- measure_lst_play
 measure_top3_lst_play <- measure_lst_play[c(1:3)]
-measure_lst_play <- measure_lst_play[c(-1:-3)]
+measure_lst_play <- measure_lst_play[c(-1:-3, -20)]
 
 # Measure lst for Rest Index
 measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
@@ -243,7 +243,7 @@ measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
 
 measure_all_lst_rest <- measure_lst_rest
 measure_top3_lst_rest <- measure_lst_rest[c(3, 4, 6)]
-measure_lst_rest <- measure_lst_rest[c(-3, -4, -6)]
+measure_lst_rest <- measure_lst_rest[c(-3, -4, -6, -22)]
 
 # Measure lst for Work Index
 measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
@@ -254,7 +254,7 @@ measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
 
 measure_all_lst_work <- measure_lst_work
 measure_top3_lst_work <- measure_lst_work[c(2:4)]
-measure_lst_work <- measure_lst_work[-c(2:4)]
+measure_lst_work <- measure_lst_work[-c(2:4, 16, 20)]
 
 # Measure lst for Fair and Poor Health as Outcome
 measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %>%
