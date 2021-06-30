@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# June 10 2021
+# June 30 2021
 
 
 # --- ui --------------------------------------------------
@@ -128,9 +128,25 @@ body <- dashboardBody(
    
    conditionalPanel(
     condition = "input.extra == false",   
-    column(width = 6,   
+    column(width = 6,
+           column(12,
+                  actionButton("hide_play_matrix", "Show / Hide Matrix",
+                               style = "color: darkgrey;
+                           background-color: white"),
+                  actionButton("hide_play_scatter", "Show / Hide Scatterplot",
+                               style = "color: darkgrey;
+                           background-color: white")
+           ),
       box(width = 12,  
-          plotOutput("play_grid_plot")
+          column(id = "play_matrix_box", width = 12,
+            selectizeInput("play_matrix_sort", "Sort Measure By",
+                           choices = c("Performance (Quintile)", "Importance (Pratt)"),
+                           selected = "Performance (Quintile)"),
+            plotOutput("play_quintile_matrix")
+          ),
+          column(id = "play_scatter_box", width = 12,
+            plotOutput("play_grid_plot")
+          )
      ) # End of box
     )
     ),
@@ -263,10 +279,26 @@ body <- dashboardBody(
           #  )
         ),
         
-    column(width = 6,   
-      box(width = 12,  
-          plotOutput("rest_grid_plot")
-     ) # End of box
+    column(width = 6,  
+           column(12,
+           actionButton("hide_rest_matrix", "Show / Hide Matrix",
+                        style = "color: darkgrey;
+                           background-color: white"),
+           actionButton("hide_rest_scatter", "Show / Hide Scatterplot",
+                        style = "color: darkgrey;
+                           background-color: white")
+           ),
+           box(width = 12,  
+               column(id = "rest_matrix_box", width = 12,
+                   selectizeInput("rest_matrix_sort", "Sort Measure By",
+                                  choices = c("Performance (Quintile)", "Importance (Pratt)"),
+                                  selected = "Performance (Quintile)"),
+                   plotOutput("rest_quintile_matrix")
+               ),
+               column(id = "rest_scatter_box", width = 12,
+               plotOutput("rest_grid_plot")
+               )
+           ) # End of box
     ),
       
       column(width = 3,
@@ -370,8 +402,24 @@ body <- dashboardBody(
            ),
            
            column(width = 6,   
+                  column(12,
+                         actionButton("hide_work_matrix", "Show / Hide Matrix",
+                                      style = "color: darkgrey;
+                           background-color: white"),
+                         actionButton("hide_work_scatter", "Show / Hide Scatterplot",
+                                      style = "color: darkgrey;
+                           background-color: white")
+                  ),
                   box(width = 12,  
-                      plotOutput("work_grid_plot")
+                      column(id = "work_matrix_box", width = 12,
+                          selectizeInput("work_matrix_sort", "Sort Measure By",
+                                         choices = c("Performance (Quintile)", "Importance (Pratt)"),
+                                         selected = "Performance (Quintile)"),
+                          plotOutput("work_quintile_matrix")
+                      ),
+                      column(id = "work_scatter_box", width = 12,
+                        plotOutput("work_grid_plot")
+                      )
                   ) # End of box
            ),
            

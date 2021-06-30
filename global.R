@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# June 28 2021
+# June 30 2021
 
 
 # --- Load packages ---------------------------------------
@@ -230,9 +230,9 @@ measure_lst_play <- filter(m_step_df_play, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_play <- measure_lst_play
+measure_all_lst_play <- measure_lst_play[c(-18, -20)]
 measure_top3_lst_play <- measure_lst_play[c(1:3)]
-measure_lst_play <- measure_lst_play[c(-1:-3, -20)]
+measure_lst_play <- measure_lst_play[c(-1:-3)]
 
 # Measure lst for Rest Index
 measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
@@ -241,9 +241,9 @@ measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_rest <- measure_lst_rest
+measure_all_lst_rest <- measure_lst_rest[c(-13, -16, -18, -19, -22)]
 measure_top3_lst_rest <- measure_lst_rest[c(3, 4, 6)]
-measure_lst_rest <- measure_lst_rest[c(-3, -4, -6, -22)]
+measure_lst_rest <- measure_lst_rest[c(-3, -4, -6)]
 
 # Measure lst for Work Index
 measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
@@ -252,9 +252,9 @@ measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_work <- measure_lst_work
+measure_all_lst_work <- measure_lst_work[c(-15, -16, -20)]
 measure_top3_lst_work <- measure_lst_work[c(2:4)]
-measure_lst_work <- measure_lst_work[-c(2:4, 16, 20)]
+measure_lst_work <- measure_lst_work[-c(2:4, 16)]
 
 # Measure lst for Fair and Poor Health as Outcome
 measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %>%
@@ -448,6 +448,7 @@ play_fixed_z_data_wgeo_long <- play_ana_data_wgeo_long %>%
     score = ifelse(Direction == "N", 100 - score, score),
     rank_value = rank(-score),
     per_rank_value = percent_rank(score) * 100,
+    quintile = ntile(score, 5),
     play = ifelse(!is.na(b), 1, 0)) %>%
   filter(play == 1) %>%
   group_by(fips, state, county) %>%
@@ -489,6 +490,7 @@ rest_fixed_z_data_wgeo_long <- rest_ana_data_wgeo_long %>%
     score = ifelse(Direction == "N", 100 - score, score),
     rank_value = rank(-score),
     per_rank_value = percent_rank(score) * 100,
+    quintile = ntile(score, 5),
     rest = ifelse(!is.na(b), 1, 0)) %>%
   filter(rest == 1) %>%
   group_by(fips, state, county) %>%
@@ -530,6 +532,7 @@ work_fixed_z_data_wgeo_long <- work_ana_data_wgeo_long %>%
     score = ifelse(Direction == "N", 100 - score, score),
     rank_value = rank(-score),
     per_rank_value = percent_rank(score) * 100,
+    quintile = ntile(score, 5),
     work = ifelse(!is.na(b), 1, 0)) %>%
   filter(work == 1) %>%
   group_by(fips, state, county) %>%

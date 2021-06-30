@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# June 10 2021
+# June 30 2021
 
 # --- Server ----------------------------------------------
 
@@ -55,6 +55,32 @@ shinyServer(function(input, output, session) {
    })
     
     # --- Filter and Control ---
+   
+   # Hide Matrix
+   observeEvent(input$hide_play_matrix, {
+     shinyjs::toggle(id = "play_matrix_box")
+   })
+   
+   observeEvent(input$hide_rest_matrix, {
+     shinyjs::toggle(id = "rest_matrix_box")
+   })
+   
+   observeEvent(input$hide_work_matrix, {
+     shinyjs::toggle(id = "work_matrix_box")
+   })
+   
+   # Hide Scatterplot
+   observeEvent(input$hide_play_scatter, {
+     shinyjs::toggle(id = "play_scatter_box")
+   })
+   
+   observeEvent(input$hide_rest_scatter, {
+     shinyjs::toggle(id = "rest_scatter_box")
+   })
+   
+   observeEvent(input$hide_work_scatter, {
+     shinyjs::toggle(id = "work_scatter_box")
+   })
   
     # Block one or the other
    # Play Index
@@ -3911,7 +3937,6 @@ shinyServer(function(input, output, session) {
         } else {
           ggplot(data, 
             aes(per_physically_inactive, score)) +
-            geom_point(size = 5) +
             geom_point(aes(fill = factor(quintile),
                            color = factor(focus)), size = 5, shape = 21) +
             geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
@@ -3920,6 +3945,7 @@ shinyServer(function(input, output, session) {
             geom_label_repel(data = region_data, aes(label = label),
                        color = "black", size = 7) +
             labs(y = "Play Index (0 to 100)", x = " % of Population Physically Inactive") +
+            theme_minimal() +
             scale_fill_manual(values = quintile_colour_pal) +
             scale_colour_manual(values = c("#ffffff00", "black")) +
             theme(legend.position = "none")     
@@ -4044,9 +4070,9 @@ shinyServer(function(input, output, session) {
           
           ggplot(data, 
             aes(per_insufficient_sleep, score)) +
-            geom_point(size = 5) +
             geom_point(aes(fill = factor(quintile),
                      color = factor(focus)), size = 5, shape = 21) +
+            geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
             geom_label_repel(aes(label = label),
                              color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
             geom_label_repel(data = region_data, aes(label = label),
@@ -4187,8 +4213,13 @@ shinyServer(function(input, output, session) {
       #     theme_minimal() +
       #     theme(legend.position = "none")     
       # }
+
+      # region.data.work.check <<- region_data
+      # data.work.check <<- data
       
-      if (input$region == "--") {
+      # Make plot
+      if (input$work_region == "--") {
+        
         ggplot(data, 
                aes(per_w_a_disability, score, color = focus)) +
           geom_point(aes(fill = factor(quintile),
@@ -4199,11 +4230,12 @@ shinyServer(function(input, output, session) {
           theme_minimal() +
           scale_fill_manual(values = quintile_colour_pal) +
           scale_colour_manual(values = c("#ffffff00", "black")) +
-          theme(legend.position = "none")   
+          theme(legend.position = "none")
+        
       } else {
+        
         ggplot(data, 
                aes(per_w_a_disability, score, color = focus)) +
-          geom_point(size = 5) +
           geom_point(aes(fill = factor(quintile),
                          color = factor(focus)), size = 5, shape = 21) +
           geom_point(data = region_data, size = 7.5, color = "#6a51a3") +
@@ -4212,6 +4244,7 @@ shinyServer(function(input, output, session) {
           geom_label_repel(data = region_data, aes(label = label),
                            color = "black", size = 7) +
           labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
+          theme_minimal() +
           scale_fill_manual(values = quintile_colour_pal) +
           scale_colour_manual(values = c("#ffffff00", "black")) +
           theme(legend.position = "none")     
@@ -4708,6 +4741,246 @@ shinyServer(function(input, output, session) {
       #   # guides(fill = guide_colourbar(nbbin = 100)) +
       #   theme(legend.position = "bottom",
       #         legend.key.width = unit(3, "cm"))
+      
+    })
+    
+    # Play Quintile Matrix
+    output$play_quintile_matrix <- renderPlot({
+      
+      data <- play_fixed_z_data_wgeo_long
+      
+      data <- data %>%
+        left_join(quintile_colour_pal_df, by = "quintile")
+       
+      if (input$region != "--") {
+        
+        data <- data %>%
+          ungroup() %>%
+          group_by(var_name, pratt, State, Region) %>%
+          summarize(
+            score = mean(score, na.rm = T)
+          ) %>%
+          ungroup() %>%
+          group_by(var_name) %>%
+          mutate(
+            rank_value = rank(-score),
+            per_rank_value = percent_rank(score) * 100,
+            quintile = ntile(score, 5)
+          )
+        
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_play,
+                          State == input$state, 
+                          Region == input$region) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_play, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score))
+        
+      } else {
+        # subset data to select county
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_play,
+                          State == input$state, 
+                          County == input$county) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_play, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score)) 
+      }
+      
+      # filter by drop down
+      if (input$iv_domain != "Key Impact") {
+        subdata <- filter(subdata,
+          Domain == input$iv_domain
+          )
+      }
+      
+      p <- ggplot(subdata, aes(label, factor(1))) +
+        geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
+        geom_text(aes(label = label), size= 4, lineheight = .8) +
+        scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
+        scale_fill_manual(
+          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+        theme_blank() +
+        theme(
+          legend.position = "bottom",
+          axis.title = element_blank(),
+          axis.text = element_blank(),
+          strip.background = element_blank(),
+          strip.text = element_blank(),
+          plot.margin = unit(c(0, 0, 0, 0), "null"),
+          panel.spacing = unit(0, "null"))
+      
+      if (input$play_matrix_sort == "Performance (Quintile)") {
+        p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
+      } else if (input$play_matrix_sort == "Importance (Pratt)") {
+        p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
+      }
+      
+    })
+    
+    # Rest Quintile Matrix
+    output$rest_quintile_matrix <- renderPlot({
+      
+      data <- rest_fixed_z_data_wgeo_long
+      
+      data <- data %>%
+        left_join(quintile_colour_pal_df, by = "quintile")
+      
+    
+      if (input$rest_region != "--") {
+        
+        data <- data %>%
+          ungroup() %>%
+          group_by(var_name, pratt, State, Region) %>%
+          summarize(
+            score = mean(score, na.rm = T)
+          ) %>%
+          ungroup() %>%
+          group_by(var_name) %>%
+          mutate(
+            rank_value = rank(-score),
+            per_rank_value = percent_rank(score) * 100,
+            quintile = ntile(score, 5)
+          )
+        
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_rest,
+                          State == input$rest_state, 
+                          Region == input$rest_region) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_rest, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score))
+        
+      } else {
+        
+        # subset data to select county
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_rest,
+                          State == input$rest_state, 
+                          County == input$rest_county) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_rest, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score))
+      }
+
+      
+      # filter by drop down
+      if (input$rest_iv_domain != "Key Impact") {
+        subdata <- filter(subdata,
+                          Domain == input$rest_iv_domain
+        )
+      }
+      
+      p <- ggplot(subdata, aes(label, factor(1))) +
+        geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
+        geom_text(aes(label = label), size= 4, lineheight = .8) +
+        scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
+        scale_fill_manual(
+          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+        theme_blank() +
+        theme(
+          legend.position = "bottom",
+          axis.title = element_blank(),
+          axis.text = element_blank(),
+          strip.background = element_blank(),
+          strip.text = element_blank(),
+          plot.margin = unit(c(0, 0, 0, 0), "null"),
+          panel.spacing = unit(0, "null"))
+      
+      if (input$rest_matrix_sort == "Performance (Quintile)") {
+        p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
+      } else if (input$rest_matrix_sort == "Importance (Pratt)") {
+        p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
+      }
+      
+    })
+    
+    # Work Quintile Matrix
+    output$work_quintile_matrix <- renderPlot({
+      
+      data <- work_fixed_z_data_wgeo_long
+      
+      data <- data %>%
+        left_join(quintile_colour_pal_df, by = "quintile")
+      
+      if (input$work_region != "--") {
+        
+        data <- data %>%
+          ungroup() %>%
+          group_by(var_name, pratt, State, Region) %>%
+          summarize(
+            score = mean(score, na.rm = T)
+          ) %>%
+          ungroup() %>%
+          group_by(var_name) %>%
+          mutate(
+            rank_value = rank(-score),
+            per_rank_value = percent_rank(score) * 100,
+            quintile = ntile(score, 5)
+          )
+        
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_work,
+                          State == input$work_state, 
+                          Region == input$work_region) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_work, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score))
+        
+      } else {
+        
+        # subset data to select county
+        subdata <- filter(data, 
+                          var_name %in% measure_all_lst_work,
+                          State == input$work_state, 
+                          County == input$work_county) %>%
+          mutate(
+            `Key Impact` = factor(ifelse(var_name %in% measure_top3_lst_work, 1, NA)),
+            quintile = factor(quintile),
+            label = str_wrap(str_replace_all(var_name, "_", " "), 16),
+            order = rank(score))
+      }
+      
+
+      
+      # filter by drop down
+      if (input$work_iv_domain != "Key Impact") {
+        subdata <- filter(subdata,
+                          Domain == input$work_iv_domain
+        )
+      }
+      
+      p <- ggplot(subdata, aes(label, factor(1))) +
+        geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
+        geom_text(aes(label = label), size= 4, lineheight = .8) +
+        scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
+        scale_fill_manual(
+          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+        theme_blank() +
+        theme(
+          legend.position = "bottom",
+          axis.title = element_blank(),
+          axis.text = element_blank(),
+          strip.background = element_blank(),
+          strip.text = element_blank(),
+          plot.margin = unit(c(0, 0, 0, 0), "null"),
+          panel.spacing = unit(0, "null"))
+      
+      if (input$work_matrix_sort == "Performance (Quintile)") {
+        p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
+      } else if (input$work_matrix_sort == "Importance (Pratt)") {
+        p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
+      }
       
     })
     
