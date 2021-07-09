@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# June 30 2021
+# July 8 2021
 
 
 # --- ui --------------------------------------------------
@@ -139,9 +139,9 @@ body <- dashboardBody(
            ),
       box(width = 12,  
           column(id = "play_matrix_box", width = 12,
-            selectizeInput("play_matrix_sort", "Sort Measure By",
-                           choices = c("Performance (Quintile)", "Importance (Pratt)"),
-                           selected = "Performance (Quintile)"),
+            selectizeInput("play_matrix_sort", "Sort Matrix By",
+                           choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
+                           selected = "Index Measures Quintile Assignment"),
             plotOutput("play_quintile_matrix")
           ),
           column(id = "play_scatter_box", width = 12,
@@ -290,9 +290,9 @@ body <- dashboardBody(
            ),
            box(width = 12,  
                column(id = "rest_matrix_box", width = 12,
-                   selectizeInput("rest_matrix_sort", "Sort Measure By",
-                                  choices = c("Performance (Quintile)", "Importance (Pratt)"),
-                                  selected = "Performance (Quintile)"),
+                   selectizeInput("rest_matrix_sort", "Sort Matrix By",
+                                  choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
+                                  selected = "Index Measures Quintile Assignment"),
                    plotOutput("rest_quintile_matrix")
                ),
                column(id = "rest_scatter_box", width = 12,
@@ -412,9 +412,9 @@ body <- dashboardBody(
                   ),
                   box(width = 12,  
                       column(id = "work_matrix_box", width = 12,
-                          selectizeInput("work_matrix_sort", "Sort Measure By",
-                                         choices = c("Performance (Quintile)", "Importance (Pratt)"),
-                                         selected = "Performance (Quintile)"),
+                          selectizeInput("work_matrix_sort", "Sort Matrix By",
+                                         choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
+                                         selected = "Index Measures Quintile Assignment"),
                           plotOutput("work_quintile_matrix")
                       ),
                       column(id = "work_scatter_box", width = 12,

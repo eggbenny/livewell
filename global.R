@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# June 30 2021
+# July 8 2021
 
 
 # --- Load packages ---------------------------------------
@@ -230,7 +230,7 @@ measure_lst_play <- filter(m_step_df_play, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_play <- measure_lst_play[c(-18, -20)]
+measure_all_lst_play <- measure_lst_play[c(-14, -16, -18, -20, -22)]
 measure_top3_lst_play <- measure_lst_play[c(1:3)]
 measure_lst_play <- measure_lst_play[c(-1:-3)]
 
@@ -241,7 +241,7 @@ measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_rest <- measure_lst_rest[c(-13, -16, -18, -19, -22)]
+measure_all_lst_rest <- measure_lst_rest[c(-5, -13, -15, -16, -18, -19, -21, -22, -23, -26)]
 measure_top3_lst_rest <- measure_lst_rest[c(3, 4, 6)]
 measure_lst_rest <- measure_lst_rest[c(-3, -4, -6)]
 
@@ -252,7 +252,7 @@ measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_work <- measure_lst_work[c(-15, -16, -20)]
+measure_all_lst_work <- measure_lst_work[c(-12, -15, -16, -19, -20, -24, -25, -29)]
 measure_top3_lst_work <- measure_lst_work[c(2:4)]
 measure_lst_work <- measure_lst_work[-c(2:4, 16)]
 
@@ -470,12 +470,12 @@ play_fixed_z_data_wgeo <- play_fixed_z_data_wgeo_long %>%
 names(play_fixed_z_data_wgeo) <- str_replace_all(names(play_fixed_z_data_wgeo), "^value_", "")
 
 # Data All out
-data_out <- dplyr::select(play_fixed_z_data_wgeo, fips,	state,	county, years_of_potential_life_lost_rate:copd_18plus, score, quintile)
+play_data_out <- dplyr::select(play_fixed_z_data_wgeo, fips,	state,	county, years_of_potential_life_lost_rate:copd_18plus, score, quintile)
 
 # Add physical_inactivity_back
 phy_inactive_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, population, per_physically_inactive)
 
-data_out <- left_join(data_out, phy_inactive_wgeo, by = c("fips", "state", "county"))
+play_data_out <- left_join(play_data_out, phy_inactive_wgeo, by = c("fips", "state", "county"))
 
 # Save fixed play index score into csv
 # write_csv(data_out, "../Beta/data/play_index_score_all_counties_all_stepwise_measure.csv", na = "")
@@ -511,12 +511,12 @@ rest_fixed_z_data_wgeo <- rest_fixed_z_data_wgeo_long %>%
 names(rest_fixed_z_data_wgeo) <- str_replace_all(names(rest_fixed_z_data_wgeo), "^value_", "")
 
 # Data All out
-data_out <- dplyr::select(rest_fixed_z_data_wgeo, fips,	state,	county, years_of_potential_life_lost_rate:routine_doctor_checkup_past_years_18plus, score, quintile)
+rest_data_out <- dplyr::select(rest_fixed_z_data_wgeo, fips,	state,	county, years_of_potential_life_lost_rate:routine_doctor_checkup_past_years_18plus, score, quintile)
 
 # Add percent insufficient sleep back
 per_insufficient_sleep_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, per_insufficient_sleep)
 
-data_out <- left_join(data_out, per_insufficient_sleep_wgeo, by = c("fips", "state", "county"))
+rest_data_out <- left_join(rest_data_out, per_insufficient_sleep_wgeo, by = c("fips", "state", "county"))
 
 # # Save fixed Rest index score into csv
 # write_csv(data_out, "../Beta/data/rest_index_score_all_counties_all_stepwise_measure.csv", na = "")
@@ -553,15 +553,33 @@ work_fixed_z_data_wgeo <- work_fixed_z_data_wgeo_long %>%
 names(work_fixed_z_data_wgeo) <- str_replace_all(names(work_fixed_z_data_wgeo), "^value_", "")
 
 # Data All out
-data_out <- dplyr::select(work_fixed_z_data_wgeo, fips,	state,	county, avg_no_of_mentally_unhealthy_days:current_asthma_18plus, score, quintile)
+work_data_out <- dplyr::select(work_fixed_z_data_wgeo, fips,	state,	county, avg_no_of_mentally_unhealthy_days:current_asthma_18plus, score, quintile)
 
 # Add percent insufficient sleep back
 per_w_a_disability <- dplyr::select(ana_data_full_wgeo, fips, state, county, per_w_a_disability)
 
-data_out <- left_join(data_out, per_w_a_disability, by = c("fips", "state", "county"))
+work_data_out <- left_join(work_data_out, per_w_a_disability, by = c("fips", "state", "county"))
 
 # # Save fixed Work index score into csv
 # write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")
+
+# Save indices data out
+data_out <- left_join(play_data_out, rest_data_out, by = c("fips", "state", "county")) %>%
+  left_join(work_data_out, by = c("fips", "state", "county")) %>%
+  rename(play_index = score.x,
+         play_quintile = quintile.x,
+         rest_index = score.y,
+         rest_quintile = quintile.y,
+         work_index = score,
+         work_quintile = quintile)
+
+names(data_out) <- str_replace(names(data_out), "\\.x|\\.y", "")
+
+# remove duplicate column
+# see https://www.marsja.se/how-to-remove-duplicates-in-r-rows-columns-dplyr/
+data_out2 <- data_out[!duplicated(as.list(data_out))]
+
+saveRDS(data_out2, file = "www/all_indices_all_counties_all_stepwise_measures.Rda")
 
 # Create cross indices map data
 play_map_data <- play_fixed_z_data_wgeo %>%

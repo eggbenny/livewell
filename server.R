@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# June 30 2021
+# July 8 2021
 
 # --- Server ----------------------------------------------
 
@@ -4800,7 +4800,7 @@ shinyServer(function(input, output, session) {
       
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
-        geom_text(aes(label = label), size= 4, lineheight = .8) +
+          geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
           values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
@@ -4814,9 +4814,9 @@ shinyServer(function(input, output, session) {
           plot.margin = unit(c(0, 0, 0, 0), "null"),
           panel.spacing = unit(0, "null"))
       
-      if (input$play_matrix_sort == "Performance (Quintile)") {
+      if (input$play_matrix_sort == "Index Measures Quintile Assignment") {
         p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
-      } else if (input$play_matrix_sort == "Importance (Pratt)") {
+      } else if (input$play_matrix_sort == "Order of Measure Impact on Index") {
         p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
       }
       
@@ -4881,7 +4881,7 @@ shinyServer(function(input, output, session) {
       
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
-        geom_text(aes(label = label), size= 4, lineheight = .8) +
+        geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
           values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
@@ -4895,9 +4895,9 @@ shinyServer(function(input, output, session) {
           plot.margin = unit(c(0, 0, 0, 0), "null"),
           panel.spacing = unit(0, "null"))
       
-      if (input$rest_matrix_sort == "Performance (Quintile)") {
+      if (input$rest_matrix_sort == "Index Measures Quintile Assignment") {
         p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
-      } else if (input$rest_matrix_sort == "Importance (Pratt)") {
+      } else if (input$rest_matrix_sort == "Order of Measure Impact on Index") {
         p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
       }
       
@@ -4962,7 +4962,7 @@ shinyServer(function(input, output, session) {
       
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
-        geom_text(aes(label = label), size= 4, lineheight = .8) +
+        geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
           values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
@@ -4976,9 +4976,9 @@ shinyServer(function(input, output, session) {
           plot.margin = unit(c(0, 0, 0, 0), "null"),
           panel.spacing = unit(0, "null"))
       
-      if (input$work_matrix_sort == "Performance (Quintile)") {
+      if (input$work_matrix_sort == "Index Measures Quintile Assignment") {
         p + facet_wrap(~ quintile + -round(pratt, 3) + var_name, scales = "free")
-      } else if (input$work_matrix_sort == "Importance (Pratt)") {
+      } else if (input$work_matrix_sort == "Order of Measure Impact on Index") {
         p + facet_wrap(~ -round(pratt, 3) + var_name, scales = "free")
       }
       
