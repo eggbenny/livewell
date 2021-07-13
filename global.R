@@ -477,8 +477,16 @@ phy_inactive_wgeo <- dplyr::select(ana_data_full_wgeo, fips, state, county, popu
 
 play_data_out <- left_join(play_data_out, phy_inactive_wgeo, by = c("fips", "state", "county"))
 
+
 # Save fixed play index score into csv
 # write_csv(data_out, "../Beta/data/play_index_score_all_counties_all_stepwise_measure.csv", na = "")
+
+
+# Get quintile out for Gregg
+play_q_out <- play_fixed_z_data_wgeo_long %>%
+  dplyr::select(fips, state, county, var_name, quintile) %>%
+  pivot_wider(names_from = "var_name", values_from = c(quintile), names_prefix = "quintile_") %>%
+  ungroup()
 
 # Rest (aka Home Index dump data outs)
 rest_fixed_z_data_wgeo_long <- rest_ana_data_wgeo_long %>%
@@ -521,6 +529,11 @@ rest_data_out <- left_join(rest_data_out, per_insufficient_sleep_wgeo, by = c("f
 # # Save fixed Rest index score into csv
 # write_csv(data_out, "../Beta/data/rest_index_score_all_counties_all_stepwise_measure.csv", na = "")
 
+# Get quintile out for Gregg
+rest_q_out <- rest_fixed_z_data_wgeo_long %>%
+  dplyr::select(fips, state, county, var_name, quintile) %>%
+  pivot_wider(names_from = "var_name", values_from = c(quintile), names_prefix = "quintile_") %>%
+  ungroup()
 
 # Work Index dump data outs
 work_fixed_z_data_wgeo_long <- work_ana_data_wgeo_long %>%
@@ -563,6 +576,24 @@ work_data_out <- left_join(work_data_out, per_w_a_disability, by = c("fips", "st
 # # Save fixed Work index score into csv
 # write_csv(data_out, "../Beta/data/work_index_score_all_counties_all_stepwise_measure.csv", na = "")
 
+# Get quintile out for Gregg
+work_q_out <- work_fixed_z_data_wgeo_long %>%
+  dplyr::select(fips, state, county, var_name, quintile) %>%
+  pivot_wider(names_from = "var_name", values_from = c(quintile), names_prefix = "quintile_") %>%
+  ungroup()
+
+# save Quintile out
+q_data_out <- left_join(play_q_out, rest_q_out, by = c("fips", "state", "county")) %>%
+  left_join(work_q_out, by = c("fips", "state", "county"))
+
+names(q_data_out) <- str_replace(names(q_data_out), "\\.x|\\.y", "")
+
+q_data_out2 <- q_data_out[!duplicated(as.list(q_data_out))]
+
+# saveRDS(q_data_out2, file = "www/all_indices_all_counties_all_stepwise_measures_quintiles.Rda")
+# write_csv(q_data_out2, "../Beta/data/all_indices_all_counties_all_stepwise_measure_quintiles.csv", na = "")
+
+
 # Save indices data out
 data_out <- left_join(play_data_out, rest_data_out, by = c("fips", "state", "county")) %>%
   left_join(work_data_out, by = c("fips", "state", "county")) %>%
@@ -579,7 +610,7 @@ names(data_out) <- str_replace(names(data_out), "\\.x|\\.y", "")
 # see https://www.marsja.se/how-to-remove-duplicates-in-r-rows-columns-dplyr/
 data_out2 <- data_out[!duplicated(as.list(data_out))]
 
-saveRDS(data_out2, file = "www/all_indices_all_counties_all_stepwise_measures.Rda")
+# saveRDS(data_out2, file = "www/all_indices_all_counties_all_stepwise_measures.Rda")
 
 # Create cross indices map data
 play_map_data <- play_fixed_z_data_wgeo %>%

@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# July 8 2021
+# July 12 2021
 
 # --- Server ----------------------------------------------
 
@@ -4747,6 +4747,8 @@ shinyServer(function(input, output, session) {
     # Play Quintile Matrix
     output$play_quintile_matrix <- renderPlot({
       
+      
+      req(input$county)
       data <- play_fixed_z_data_wgeo_long
       
       data <- data %>%
@@ -4798,12 +4800,14 @@ shinyServer(function(input, output, session) {
           )
       }
       
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
+      
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
           geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
-          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+          values = quintile_colour_pal_lst[use_colour], drop = FALSE,  na.value="transparent") +
         theme_blank() +
         theme(
           legend.position = "bottom",
@@ -4825,6 +4829,8 @@ shinyServer(function(input, output, session) {
     # Rest Quintile Matrix
     output$rest_quintile_matrix <- renderPlot({
       
+      
+      req(input$rest_county)
       data <- rest_fixed_z_data_wgeo_long
       
       data <- data %>%
@@ -4879,12 +4885,16 @@ shinyServer(function(input, output, session) {
         )
       }
       
+      
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
+
+      
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
         geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
-          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+          values = quintile_colour_pal_lst[use_colour], drop = FALSE,  na.value="transparent") +
         theme_blank() +
         theme(
           legend.position = "bottom",
@@ -4906,6 +4916,8 @@ shinyServer(function(input, output, session) {
     # Work Quintile Matrix
     output$work_quintile_matrix <- renderPlot({
       
+      
+      req(input$work_county)
       data <- work_fixed_z_data_wgeo_long
       
       data <- data %>%
@@ -4960,12 +4972,14 @@ shinyServer(function(input, output, session) {
         )
       }
       
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
+      
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
         geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
         scale_color_manual(values = c("black"),  na.value="transparent", guide = "none") +
         scale_fill_manual(
-          values = quintile_colour_pal_lst, drop = FALSE,  na.value="transparent") +
+          values = quintile_colour_pal_lst[use_colour], drop = FALSE,  na.value="transparent") +
         theme_blank() +
         theme(
           legend.position = "bottom",
