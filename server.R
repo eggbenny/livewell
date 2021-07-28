@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# July 12 2021
+# July 27 2021
 
 # --- Server ----------------------------------------------
 
@@ -1902,7 +1902,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste("% of Population",br(), "Physically Inactive")),
-          value, 
+          paste0(value, " (", round(real_b * xchange, 1), ")"), 
           fill = TRUE,
           color = "navy"
         )
@@ -1992,7 +1992,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste("% of Population", br(), "with Insufficient Sleep")),
-          value, 
+          paste0(value, " (", round(real_b * xchange, 1), ")"), 
           fill = TRUE,
           color = "navy"
         )
@@ -2082,7 +2082,7 @@ shinyServer(function(input, output, session) {
       
       infoBox(
         HTML(paste("% of Population", br(), "with Disability")),
-        value, 
+        paste0(value, " (", round(real_b * xchange, 1), ")"), 
         fill = TRUE,
         color = "navy"
       )
@@ -2277,6 +2277,7 @@ shinyServer(function(input, output, session) {
             dplyr::select(score) %>%
             unlist() %>%
             as.numeric()
+      
         
         if (input$region != "--") {
           value <- value_region
@@ -2284,10 +2285,20 @@ shinyServer(function(input, output, session) {
           value <- value_county
         }
         
+        # Add original to calculate change
+        value_fixed <- play_fixed_z_data_wgeo %>%
+          filter(state == input$state, county == input$county) %>%
+          pull(score)
+        
+        change <- round(value - value_fixed, 1)
+        
+        value_fixed <- round(value_fixed, 1)
+        
         value <- round(value, 1)
         
         infoBox(
-          "Play Index", value, 
+          "Play Index", 
+          paste0(value, " (", change, ")"), 
           fill = TRUE,
           color = "blue"
         )
@@ -2314,10 +2325,20 @@ shinyServer(function(input, output, session) {
           value <- value_county
         }
         
+        # Add original to calculate change
+        value_fixed <- rest_fixed_z_data_wgeo %>%
+          filter(state == input$state, county == input$county) %>%
+          pull(score)
+        
+        change <- round(value - value_fixed, 1)
+        
+        value_fixed <- round(value_fixed, 1)
+        
         value <- round(value, 1)
         
         infoBox(
-          "Rest Index", value, 
+          "Rest Index", 
+          paste0(value, " (", change, ")"), 
           fill = TRUE,
           color = "blue"
         )
@@ -2344,10 +2365,20 @@ shinyServer(function(input, output, session) {
           value <- value_county
         }
         
+        # Add original to calculate change
+        value_fixed <- work_fixed_z_data_wgeo %>%
+          filter(state == input$state, county == input$county) %>%
+          pull(score)
+        
+        change <- round(value - value_fixed, 1)
+        
+        value_fixed <- round(value_fixed, 1)
+        
         value <- round(value, 1)
         
         infoBox(
-          "Work Index", value, 
+          "Work Index", 
+          paste0(value, " (", change, ")"),
           fill = TRUE,
           color = "blue"
         )
@@ -2598,6 +2629,157 @@ shinyServer(function(input, output, session) {
     })
     
     
+    # Insufficient sleep change for card
+    insufficient_sleep_change <- reactive({
+      
+      # Physical Inactivity
+      # Get data
+      data <- rest_plot_data()
+      
+      data <- left_join(data, region_lkup, by = c("fips" = "FIPS"))
+      
+      if (input$rest_region != "--") {
+        data <- data %>% mutate(
+          focusOrg = focus,
+          focus = ifelse(Region == input$rest_region, 1, focus),
+          focus = ifelse(is.na(focus), focusOrg, focus))
+      }
+      
+      # Get weight aka slider data
+      slider_data <- rest_slider_data()
+      slider_med_data <- rest_slider_med_data()
+      
+      if (nrow(slider_data) == 0) {
+        slider_data <- data.frame(b = 0)
+      }
+      
+      # Make focus generic
+      #  if (input$iv_top5 != "Select a Measure"  & input$rest_iv == "Select a Measure") {
+      #  data <- data %>%
+      #      rename(
+      #        "top5_iv" = input$iv_top5)  %>%
+      #    mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$change_top5, top5_iv))
+      #  }
+      #  
+      # if (input$iv_top5 %in% measure_top3_lst_play & input$iv != "Select a Measure") {
+      #  data <- data %>%
+      #      rename(
+      #        "focus_iv" = input$iv_top5) %>%
+      #    mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+      #  }
+      
+      # 
+      # if (input$iv != "Select a Measure") {
+      #   
+      # data <- data %>%
+      #     rename(
+      #       "focus_iv" = input$iv) %>%
+      #   mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+      # }
+      
+      # Change x axis
+      if(input$rest_iv_top5 != "Select a Measure" & input$rest_iv == "Select a Measure") {
+        xchange <- input$rest_change_top5
+      } else {
+        xchange <- input$rest_change
+      }
+      
+      # if (input$iv_top5 == "per_fair_or_poor_health" & input$iv != "Select a Measure") {
+      #   b2 <- filter(slider_data, var_name == "per_fair_or_poor_health") %>% 
+      #          dplyr::select(b) %>% unlist() %>% as.numeric()
+      #   bm <- filter(slider_med_data, var_name == input$iv) %>% 
+      #          dplyr::select(b) %>% unlist() %>% as.numeric()
+      #   real_b <- b2 * bm
+      #   # print(paste0("Mod Route(", input$iv, "): ", real_b, " = ", bm, " * ", b2))
+      # } else {
+      #   real_b <- slider_data$b
+      # }
+      
+      # Get real_b from slider
+      real_b <- rest_slider_change_b()
+      
+      change <- real_b * xchange
+      
+      return(change)
+      
+    })
+    
+    
+    # Per with Disability change for card
+    per_w_disability_change <- reactive({
+      
+      # Physical Inactivity
+      # Get data
+      data <- work_plot_data()
+      
+      data <- left_join(data, region_lkup, by = c("fips" = "FIPS"))
+      
+      if (input$work_region != "--") {
+        data <- data %>% mutate(
+          focusOrg = focus,
+          focus = ifelse(Region == input$work_region, 1, focus),
+          focus = ifelse(is.na(focus), focusOrg, focus))
+      }
+      
+      # Get weight aka slider data
+      slider_data <- work_slider_data()
+      slider_med_data <- work_slider_med_data()
+      
+      if (nrow(slider_data) == 0) {
+        slider_data <- data.frame(b = 0)
+      }
+      
+      # Make focus generic
+      #  if (input$iv_top5 != "Select a Measure"  & input$rest_iv == "Select a Measure") {
+      #  data <- data %>%
+      #      rename(
+      #        "top5_iv" = input$iv_top5)  %>%
+      #    mutate(top5_iv =  ifelse(focus == 1, top5_iv + input$change_top5, top5_iv))
+      #  }
+      #  
+      # if (input$iv_top5 %in% measure_top3_lst_play & input$iv != "Select a Measure") {
+      #  data <- data %>%
+      #      rename(
+      #        "focus_iv" = input$iv_top5) %>%
+      #    mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+      #  }
+      
+      # 
+      # if (input$iv != "Select a Measure") {
+      #   
+      # data <- data %>%
+      #     rename(
+      #       "focus_iv" = input$iv) %>%
+      #   mutate(focus_iv = ifelse(focus == 1, focus_iv + input$change, focus_iv))
+      # }
+      
+      # Change x axis
+      if(input$work_iv_top5 != "Select a Measure" & input$work_iv == "Select a Measure") {
+        xchange <- input$work_change_top5
+      } else {
+        xchange <- input$work_change
+      }
+      
+      # if (input$iv_top5 == "per_fair_or_poor_health" & input$iv != "Select a Measure") {
+      #   b2 <- filter(slider_data, var_name == "per_fair_or_poor_health") %>% 
+      #          dplyr::select(b) %>% unlist() %>% as.numeric()
+      #   bm <- filter(slider_med_data, var_name == input$iv) %>% 
+      #          dplyr::select(b) %>% unlist() %>% as.numeric()
+      #   real_b <- b2 * bm
+      #   # print(paste0("Mod Route(", input$iv, "): ", real_b, " = ", bm, " * ", b2))
+      # } else {
+      #   real_b <- slider_data$b
+      # }
+      
+      # Get real_b from slider
+      real_b <- work_slider_change_b()
+      
+      change <- real_b * xchange
+      
+      return(change)
+      
+    })
+    
     # Extra data grouping
     extra_data_for_card <- reactive({
         
@@ -2660,7 +2842,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
-          final_value,
+          paste0(final_value, " (", round(b * phy_inactive_change, 1), ")"),
           fill = TRUE,
           color = "olive"
         )
@@ -2687,7 +2869,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste("Average # of", br(), "Physically Unhealthy Days")),
-          final_value,
+          paste0(final_value, " (", round(b * phy_inactive_change, 2), ")"),
           fill = TRUE,
           color = "olive"
         )
@@ -2714,7 +2896,7 @@ shinyServer(function(input, output, session) {
         
         infoBox(
           HTML(paste("Average # of", br(), "Mentally Unhealthy Days")),
-          final_value,
+          paste0(final_value, " (", round(b * phy_inactive_change, 2), ")"),
           fill = TRUE,
           color = "olive"
         )
@@ -2741,13 +2923,362 @@ shinyServer(function(input, output, session) {
 
         infoBox(
           HTML(paste("Premature Age Adjusted", br(), "Mortality")),
-          final_value,
+          paste0(final_value, " (", round(b * phy_inactive_change, 2), ")"),
           fill = TRUE,
-          color = "olive"
+          color = "fuchsia"
         )
 
     })
 
+    output$play_impact_card_5 <- renderInfoBox({
+      
+      # Physical inactive change
+      phy_inactive_change <- phy_inactive_change()
+      # Get impact model b
+      # data <- z_geo_w_criterion_df()
+      # 
+      # model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+      #   tidy()
+      # 
+      # b <- model$estimate[2]
+      
+      # Hard code for now
+      b <- -43.3992
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(0- (b * phy_inactive_change), 1)
+      
+      # final_value <- round(data$age_adjusted_death_rate - (b * phy_inactive_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Est' Change Employer Total", br(), "Spend per Member")),
+        paste0("$", round(final_value, 1)),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    
+    # New cards (4):  
+    # Years of Potential Life Lost Rate, 
+    # Average Number of Physically Unhealthy Days, 
+    # Average Number of Mentally Unhealthy Days, 
+    # Premature age-adjusted mortality
+    
+    output$rest_impact_card_1 <- renderInfoBox({
+      
+      # Insufficient Sleep change
+      insufficient_sleep_change <- insufficient_sleep_change()
+      # Get impact model b
+      data <- rest_z_geo_w_criterion_df()
+      
+      # value <- cor(data$score, data$years_of_potential_life_lost_rate, 
+      #     method = "pearson", use = "complete.obs")
+      
+      model <- lm(years_of_potential_life_lost_rate ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      # b.check <<- b
+      # select_data.check <<- data
+      # phy_inactive_change.check <<- phy_inactive_change
+      
+      final_value <- round(data$years_of_potential_life_lost_rate - (b * insufficient_sleep_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
+        paste0(final_value, " (", round(b * insufficient_sleep_change, 1), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$rest_impact_card_2 <- renderInfoBox({
+      
+      # Insufficient Sleep change
+      insufficient_sleep_change <- insufficient_sleep_change()
+      # Get impact model b
+      data <- rest_z_geo_w_criterion_df()
+      
+      model <- lm(avg_no_of_physically_unhealthy_days ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$avg_no_of_physically_unhealthy_days - (b * insufficient_sleep_change), 2)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Average # of", br(), "Physically Unhealthy Days")),
+        paste0(final_value, " (", round(b * insufficient_sleep_change, 2), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$rest_impact_card_3 <- renderInfoBox({
+      
+      # Insufficient Sleep change
+      insufficient_sleep_change <- insufficient_sleep_change()
+      # Get impact model b
+      data <- rest_z_geo_w_criterion_df()
+      
+      model <- lm(avg_no_of_mentally_unhealthy_days ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$avg_no_of_mentally_unhealthy_days - (b * insufficient_sleep_change), 2)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Average # of", br(), "Mentally Unhealthy Days")),
+        paste0(final_value, " (", round(b * insufficient_sleep_change, 2), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$rest_impact_card_4 <- renderInfoBox({
+      
+      # Insufficient Sleep change
+      insufficient_sleep_change <- insufficient_sleep_change()
+      # Get impact model b
+      data <- rest_z_geo_w_criterion_df()
+      
+      # add age_adjusted_death_rate
+      data <- left_join(data, dplyr::select(ana_data_criterion, age_adjusted_death_rate, fips),
+                        by = "fips")
+      
+      model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$age_adjusted_death_rate - (b * insufficient_sleep_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Premature Age Adjusted", br(), "Mortality")),
+        paste0(final_value, " (", round(b * insufficient_sleep_change, 2), ")"),
+        fill = TRUE,
+        color = "fuchsia"
+      )
+      
+    })
+    
+    
+    output$rest_impact_card_5 <- renderInfoBox({
+      
+      # Insufficient Sleep change
+      insufficient_sleep_change <-  insufficient_sleep_change()
+      # Get impact model b
+      # data <- z_geo_w_criterion_df()
+      # 
+      # model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+      #   tidy()
+      # 
+      # b <- model$estimate[2]
+      
+      # Hard code for now
+      b <- -64.94864 
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(0 - (b * insufficient_sleep_change), 1)
+      
+      # final_value <- round(data$age_adjusted_death_rate - (b * phy_inactive_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Est' Change Employer Total", br(), "Spend per Member")),
+        paste0("$", round(final_value, 1)),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+
+    
+    # New cards (4):  
+    # Years of Potential Life Lost Rate, 
+    # Average Number of Physically Unhealthy Days, 
+    # Average Number of Mentally Unhealthy Days, 
+    # Premature age-adjusted mortality
+    
+    output$work_impact_card_1 <- renderInfoBox({
+      
+      # Per with Disability change
+      per_w_disability_change <-  per_w_disability_change()
+      # Get impact model b
+      data <- work_z_geo_w_criterion_df()
+      
+      # value <- cor(data$score, data$years_of_potential_life_lost_rate, 
+      #     method = "pearson", use = "complete.obs")
+      
+      model <- lm(years_of_potential_life_lost_rate ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      # b.check <<- b
+      # select_data.check <<- data
+      # phy_inactive_change.check <<- phy_inactive_change
+      
+      final_value <- round(data$years_of_potential_life_lost_rate - (b * per_w_disability_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
+        paste0(final_value, " (", round(b * per_w_disability_change, 1), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$work_impact_card_2 <- renderInfoBox({
+      
+      # Per with Disability change
+      per_w_disability_change <-  per_w_disability_change()
+      # Get impact model b
+      data <- work_z_geo_w_criterion_df()
+      
+      model <- lm(avg_no_of_physically_unhealthy_days ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$avg_no_of_physically_unhealthy_days - (b * per_w_disability_change), 2)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Average # of", br(), "Physically Unhealthy Days")),
+        paste0(final_value, " (", round(b * per_w_disability_change, 2), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$work_impact_card_3 <- renderInfoBox({
+      
+      # Per with Disability change
+      per_w_disability_change <-  per_w_disability_change()
+      # Get impact model b
+      data <- work_z_geo_w_criterion_df()
+      
+      model <- lm(avg_no_of_mentally_unhealthy_days ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$avg_no_of_mentally_unhealthy_days - (b * per_w_disability_change), 2)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Average # of", br(), "Mentally Unhealthy Days")),
+        paste0(final_value, " (", round(b * per_w_disability_change, 2), ")"),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
+    output$work_impact_card_4 <- renderInfoBox({
+      
+      # Per with Disability change
+      per_w_disability_change <-  per_w_disability_change()
+      # Get impact model b
+      data <- work_z_geo_w_criterion_df()
+      
+      # # add age_adjusted_death_rate
+      data <- left_join(data, dplyr::select(ana_data_criterion, age_adjusted_death_rate, fips),
+                        by = "fips")
+      
+      model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+        tidy()
+      
+      b <- model$estimate[2]
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(data$age_adjusted_death_rate - (b * per_w_disability_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Premature Age Adjusted", br(), "Mortality")),
+        paste0(final_value, " (", round(b * per_w_disability_change, 2), ")"),
+        fill = TRUE,
+        color = "fuchsia"
+      )
+      
+    })
+    
+    output$work_impact_card_5 <- renderInfoBox({
+      
+      # per_w_disability change
+      per_w_disability_change <-  per_w_disability_change()
+      # Get impact model b
+      # data <- z_geo_w_criterion_df()
+      # 
+      # model <- lm(age_adjusted_death_rate ~ score, data = data) %>%
+      #   tidy()
+      # 
+      # b <- model$estimate[2]
+      
+      # Hard code for now
+      b <- -46.56329  
+      
+      data <- extra_data_for_card()
+      
+      final_value <- round(0- (b * per_w_disability_change), 1)
+      
+      # final_value <- round(data$age_adjusted_death_rate - (b * phy_inactive_change), 1)
+      
+      # print(paste0(final_value, ": ", b, ": ", phy_inactive_change))
+      
+      infoBox(
+        HTML(paste("Est' Change Employer Total", br(), "Spend per Member")),
+        paste0("$", round(final_value, 1)),
+        fill = TRUE,
+        color = "olive"
+      )
+      
+    })
+    
     # --- Extra Impact Card ---
     # Optional for some Clients
      
@@ -2860,7 +3391,10 @@ shinyServer(function(input, output, session) {
         
         final_value <- (data$annual_avg_emplvl + pop_change_value ) * 166
         
-        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits=1))
+        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits = 1),
+                              
+                              " ($", formatC(round(pop_change_value, 1), format="f", big.mark=",", digits = 0),
+                              ")")
         
         infoBox(
           HTML(paste("Physical Inactivity", br(), " Absenteeism Cost to Employer")),
@@ -2927,7 +3461,8 @@ shinyServer(function(input, output, session) {
         
         final_value <- (data$annual_avg_emplvl - pop_change_value ) * 2280 
         
-        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits=1))
+        final_value <- paste0("$", formatC(round(final_value, 1), format="f", big.mark=",", digits = 1),
+                              " ($", formatC(round(pop_change_value, 1), format="f", big.mark=",", digits = 0), ")")
         
         infoBox(
           HTML(paste("Insufficient Sleep", br(), "Cost")),

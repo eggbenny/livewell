@@ -1,12 +1,12 @@
 # ui.R
 # Benedito Chou
-# July 8 2021
+# July 27 2021
 
 
 # --- ui --------------------------------------------------
 
 # --- Header
-header <- dashboardHeader(title = "LiveWell Prototype Demo")
+header <- dashboardHeader(title = "About Us Platform")
 
 sidebar <- dashboardSidebar(
     
@@ -43,6 +43,7 @@ sidebar <- dashboardSidebar(
 # --- Body
 body <- dashboardBody(
     
+  includeCSS("www/custom.css"),
    useShinyjs(),  # Set up shinyjs
   
   tabItems(
@@ -67,8 +68,8 @@ body <- dashboardBody(
                     infoBoxOutput("population", width = 12),
                     infoBoxOutput("pop_impact", width = 12),
                     conditionalPanel(
-                        condition = "input.extra == true",
-                         infoBoxOutput("play_extra_impact_card", width = 12)
+                        condition = "input.extra == true"
+                         # infoBoxOutput("play_extra_impact_card", width = 12)
                     ),
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
@@ -120,7 +121,9 @@ body <- dashboardBody(
         infoBoxOutput("play_impact_card_1", width = 12),
         infoBoxOutput("play_impact_card_2", width = 12),
         infoBoxOutput("play_impact_card_3", width = 12),
-        infoBoxOutput("play_impact_card_4", width = 12)
+        infoBoxOutput("play_impact_card_4", width = 12),
+        infoBoxOutput("play_impact_card_5", width = 12),
+        infoBoxOutput("play_extra_impact_card", width = 12)
       )  
      )
     ) #End of box
@@ -258,8 +261,8 @@ body <- dashboardBody(
                     infoBoxOutput("rest_population", width = 12),
                     infoBoxOutput("rest_pop_impact", width = 12),
                     conditionalPanel(
-                        condition = "input.extra == true",
-                         infoBoxOutput("rest_extra_impact_card", width = 12)
+                        condition = "input.extra == true"
+                         # infoBoxOutput("rest_extra_impact_card", width = 12)
                     )
                     # infoBoxOutput("iv_echo", width = 12),
                     # infoBoxOutput("iv_rank", width = 12)  
@@ -279,6 +282,27 @@ body <- dashboardBody(
           #  )
         ),
         
+        conditionalPanel(
+          condition = "input.extra == true",
+          tabBox(width = 3,
+                 title = "Impact of Rest on",
+                 # The id lets us use input$tabset1 on the server to find the current tab
+                 id = "rest_tabset2", 
+                 tabPanel("Key Criteria",
+                          fluidRow(
+                            infoBoxOutput("rest_impact_card_1", width = 12),
+                            infoBoxOutput("rest_impact_card_2", width = 12),
+                            infoBoxOutput("rest_impact_card_3", width = 12),
+                            infoBoxOutput("rest_impact_card_4", width = 12),
+                            infoBoxOutput("rest_impact_card_5", width = 12),
+                            infoBoxOutput("rest_extra_impact_card", width = 12)
+                          )  
+                 )
+          ) #End of box
+        ),
+        
+        conditionalPanel(
+          condition = "input.extra == false",   
     column(width = 6,  
            column(12,
            actionButton("hide_rest_matrix", "Show / Hide Matrix",
@@ -299,6 +323,7 @@ body <- dashboardBody(
                plotOutput("rest_grid_plot")
                )
            ) # End of box
+    )
     ),
       
       column(width = 3,
@@ -401,6 +426,26 @@ body <- dashboardBody(
              #  )
            ),
            
+           conditionalPanel(
+             condition = "input.extra == true",
+             tabBox(width = 3,
+                    title = "Impact of Work on",
+                    # The id lets us use input$tabset1 on the server to find the current tab
+                    id = "work_tabset2", 
+                    tabPanel("Key Criteria",
+                             fluidRow(
+                               infoBoxOutput("work_impact_card_1", width = 12),
+                               infoBoxOutput("work_impact_card_2", width = 12),
+                               infoBoxOutput("work_impact_card_3", width = 12),
+                               infoBoxOutput("work_impact_card_4", width = 12),
+                               infoBoxOutput("work_impact_card_5", width = 12)
+                             )  
+                    )
+             ) #End of box
+           ),
+           
+           conditionalPanel(
+             condition = "input.extra == false", 
            column(width = 6,   
                   column(12,
                          actionButton("hide_work_matrix", "Show / Hide Matrix",
@@ -421,6 +466,7 @@ body <- dashboardBody(
                         plotOutput("work_grid_plot")
                       )
                   ) # End of box
+           )
            ),
            
            column(width = 3,

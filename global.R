@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# July 8 2021
+# July 27 2021
 
 
 # --- Load packages ---------------------------------------
@@ -87,7 +87,9 @@ load("www/m_step_df_avg_mdays.RData")
 
 # --- Some Format Setting ------------------------------------
 
-quintile_colour_pal <- c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a")
+# Old colour
+# quintile_colour_pal <- c("#d53e4f", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a")
+quintile_colour_pal <- c("#f26957", "#9ea1cf", "#f7d9f0", "#e5eb45", "#33a654")
 
 # --- Calculate Index Score ----------------------------------
 
@@ -648,8 +650,8 @@ cross_map_data <- left_join(dplyr::select(play_fixed_z_data_wgeo, fips, state, c
 
 quintile_colour_pal_df <- tibble(
     quintile = c(1, 2, 3, 4, 5),
-    qcolor = c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a"))
-quintile_colour_pal_lst <- c("#e41a1c", "#ffff99", "#ff7f00", "#377eb8", "#4daf4a")
+    qcolor = c("#f26957", "#9ea1cf", "#f7d9f0", "#e5eb45", "#33a654"))
+quintile_colour_pal_lst <- c("#f26957", "#9ea1cf", "#f7d9f0", "#e5eb45", "#33a654")
 
 # new_cross_map <- read_excel(file.choose())
 # new_cross_map <- read_excel("../Beta/data/About Us cross_indices_map v2.xlsx")
