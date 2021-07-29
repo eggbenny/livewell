@@ -2844,7 +2844,7 @@ shinyServer(function(input, output, session) {
           HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
           paste0(final_value, " (", round(b * phy_inactive_change, 1), ")"),
           fill = TRUE,
-          color = "olive"
+          color = "fuchsia"
         )
       
     })
@@ -2998,7 +2998,7 @@ shinyServer(function(input, output, session) {
         HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
         paste0(final_value, " (", round(b * insufficient_sleep_change, 1), ")"),
         fill = TRUE,
-        color = "olive"
+        color = "fuchsia"
       )
       
     })
@@ -3157,7 +3157,7 @@ shinyServer(function(input, output, session) {
         HTML(paste(" Years of Potential", br(), "Life Lost Rate")),
         paste0(final_value, " (", round(b * per_w_disability_change, 1), ")"),
         fill = TRUE,
-        color = "olive"
+        color = "fuchsia"
       )
       
     })
@@ -4761,7 +4761,7 @@ shinyServer(function(input, output, session) {
                          color = factor(focus)), size = 5, shape = 21) +
           geom_label_repel(aes(label = label),
                            color = "black") +
-          labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
+          labs(y = "Work Index (0 to 100)", x = "% of population with a cognitive or physical impairment") +
           theme_minimal() +
           scale_fill_manual(values = quintile_colour_pal) +
           scale_colour_manual(values = c("#ffffff00", "black")) +
@@ -4778,7 +4778,7 @@ shinyServer(function(input, output, session) {
                            color = "darkgrey", size = 4.5, box.padding = .12, label.padding = .12, label.size = 0.2) +
           geom_label_repel(data = region_data, aes(label = label),
                            color = "black", size = 7) +
-          labs(y = "Work Index (0 to 100)", x = "% with a Disability") +
+          labs(y = "Work Index (0 to 100)", x = "% of population with a cognitive or physical impairment") +
           theme_minimal() +
           scale_fill_manual(values = quintile_colour_pal) +
           scale_colour_manual(values = c("#ffffff00", "black")) +

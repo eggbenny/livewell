@@ -119,9 +119,9 @@ body <- dashboardBody(
      tabPanel("Key Criteria",
       fluidRow(
         infoBoxOutput("play_impact_card_1", width = 12),
+        infoBoxOutput("play_impact_card_4", width = 12),
         infoBoxOutput("play_impact_card_2", width = 12),
         infoBoxOutput("play_impact_card_3", width = 12),
-        infoBoxOutput("play_impact_card_4", width = 12),
         infoBoxOutput("play_impact_card_5", width = 12),
         infoBoxOutput("play_extra_impact_card", width = 12)
       )  
@@ -291,9 +291,9 @@ body <- dashboardBody(
                  tabPanel("Key Criteria",
                           fluidRow(
                             infoBoxOutput("rest_impact_card_1", width = 12),
+                            infoBoxOutput("rest_impact_card_4", width = 12),
                             infoBoxOutput("rest_impact_card_2", width = 12),
                             infoBoxOutput("rest_impact_card_3", width = 12),
-                            infoBoxOutput("rest_impact_card_4", width = 12),
                             infoBoxOutput("rest_impact_card_5", width = 12),
                             infoBoxOutput("rest_extra_impact_card", width = 12)
                           )  
@@ -435,9 +435,9 @@ body <- dashboardBody(
                     tabPanel("Key Criteria",
                              fluidRow(
                                infoBoxOutput("work_impact_card_1", width = 12),
+                               infoBoxOutput("work_impact_card_4", width = 12),
                                infoBoxOutput("work_impact_card_2", width = 12),
                                infoBoxOutput("work_impact_card_3", width = 12),
-                               infoBoxOutput("work_impact_card_4", width = 12),
                                infoBoxOutput("work_impact_card_5", width = 12)
                              )  
                     )
