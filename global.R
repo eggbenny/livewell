@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# July 27 2021
+# Aug 2 2021
 
 
 # --- Load packages ---------------------------------------
@@ -232,9 +232,9 @@ measure_lst_play <- filter(m_step_df_play, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_play <- measure_lst_play[c(-14, -16, -18, -20, -22)]
+measure_all_lst_play <- measure_lst_play[c(-14, -16, -18, -20, -22, -24, -25, -26)]
 measure_top3_lst_play <- measure_lst_play[c(1:3)]
-measure_lst_play <- measure_lst_play[c(-1:-3)]
+measure_lst_play <- measure_lst_play[c(-1, -2, -3, -14, -16, -18, -20, -22, -24, -25, -26)]
 
 # Measure lst for Rest Index
 measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
@@ -243,9 +243,9 @@ measure_lst_rest <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_rest <- measure_lst_rest[c(-5, -13, -15, -16, -18, -19, -21, -22, -23, -26)]
+measure_all_lst_rest <- measure_lst_rest[c(-1, -2, -5, -13, -15, -16, -18, -19, -21, -22, -23, -25, -26, -27, -28, -29)]
 measure_top3_lst_rest <- measure_lst_rest[c(3, 4, 6)]
-measure_lst_rest <- measure_lst_rest[c(-3, -4, -6)]
+measure_lst_rest <- measure_lst_rest[c(-1, -2, -3, -4, -5, -6, -13, -15, -16, -18, -19, -21, -22, -23, -25, -26, -27, -28, -29)]
 
 # Measure lst for Work Index
 measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
@@ -254,9 +254,9 @@ measure_lst_work <- filter(m_step_df_work, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_work <- measure_lst_work[c(-12, -15, -16, -19, -20, -24, -25, -29)]
+measure_all_lst_work <- measure_lst_work[c(-1, -12, -15, -16, -17, -18, -19, -20, -22, -24, -25, -27, -28, -29, -31, -32, -33, -34, -35, -36)]
 measure_top3_lst_work <- measure_lst_work[c(2:4)]
-measure_lst_work <- measure_lst_work[-c(2:4, 16)]
+measure_lst_work <- measure_lst_work[c(-1, -2, -3, -4, -12, -15, -16, -17, -18, -19, -20, -22, -24, -25, -27, -28, -29, -31, -32, -33, -34, -35, -36)]
 
 # Measure lst for Fair and Poor Health as Outcome
 measure_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %>%
@@ -274,9 +274,9 @@ domain_lst_fp_health <- filter(m_step_df_fp_health, var_name != "(Intercept)") %
   unlist() %>%
   as.character()
 
-measure_all_lst_fp_health <- measure_lst_fp_health 
+measure_all_lst_fp_health <- measure_lst_fp_health[c(-18, -25, -26, -27, -28, -34, -36)]
 measure_top3_lst_fp_health <- measure_lst_fp_health[c(1:3)]
-measure_lst_fp_health <- measure_lst_fp_health[c(-1:-3)]
+measure_lst_fp_health <- measure_lst_fp_health[c(-1, -2, -3, -18, -25, -26, -27, -28, -34, -36)]
 
 # Measure lst for Grad as Outcome
 measure_lst_grad <- filter(m_step_df_grad, var_name != "(Intercept)") %>%
@@ -294,9 +294,9 @@ domain_lst_grad <- filter(m_step_df_grad, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_grad <- measure_lst_grad
+measure_all_lst_grad <- measure_lst_grad[c(-2, -23, -26, -27, -28, -30, -31)]
 measure_top3_lst_grad <- measure_lst_grad[c(1,3,4)]
-measure_lst_grad <- measure_lst_grad[c(-1,-3,-4)]
+measure_lst_grad <- measure_lst_grad[c(-1, -2, -3, -4, -23, -26, -27, -28, -30, -31)]
 
 # Measure lst for Diabetes as Outcome
 measure_lst_diabetes <- filter(m_step_df_diabetes, var_name != "(Intercept)") %>%
@@ -314,9 +314,9 @@ domain_lst_diabetes <- filter(m_step_df_diabetes, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_diabetes <- measure_lst_diabetes
+measure_all_lst_diabetes <- measure_lst_diabetes[c(-1, -8, -16, -17, -19)]
 measure_top3_lst_diabetes <- measure_lst_diabetes[c(2:4)]
-measure_lst_diabetes <- measure_lst_diabetes[-c(2:4)]
+measure_lst_diabetes <- measure_lst_diabetes[c(-1, -2, -3, -4, -8, -16, -17, -19)]
 
 # Measure lst for Routine Doc Checkup as Outcome
 # measure_lst_doc_checkup <- filter(m_step_df_doc_checkup, var_name != "(Intercept)") %>%
@@ -375,9 +375,9 @@ domain_lst_avg_m_days <- filter(m_step_df_avg_m_days, var_name != "(Intercept)")
   unlist() %>%
   as.character()
 
-measure_all_lst_avg_m_days <- measure_lst_avg_m_days
+measure_all_lst_avg_m_days <- measure_lst_avg_m_days[c(-16, -17, -18, -19, -20, -21, -22)]
 measure_top3_lst_avg_m_days <- measure_lst_avg_m_days[c(1:3)]
-measure_lst_avg_m_days <- measure_lst_avg_m_days[c(-1:-3)]
+measure_lst_avg_m_days <- measure_lst_avg_m_days[c(-1, -2, -3, -16, -17, -18, -19, -20, -21, -22)]
 
 
 measure_lst_obesity <- filter(m_step_df_obesity, var_name != "(Intercept)") %>%
@@ -395,9 +395,9 @@ domain_lst_obesity <- filter(m_step_df_obesity, var_name != "(Intercept)") %>%
   unlist() %>%
   as.character()
 
-measure_all_lst_obesity <- measure_lst_obesity
+measure_all_lst_obesity <- measure_lst_obesity[c(-23, -24, -25, -26)]
 measure_top3_lst_obesity <- measure_lst_obesity[c(1:3)]
-measure_lst_obesity <- measure_lst_obesity[-c(1:3)]
+measure_lst_obesity <- measure_lst_obesity[c(-1, -2, -3, -23, -24, -25, -26)]
 
 
 measure_lst_phy_inactive <- filter(m_step_df_phy_inactive, var_name != "(Intercept)") %>%
@@ -415,9 +415,9 @@ domain_lst_phy_inactive <- filter(m_step_df_phy_inactive, var_name != "(Intercep
   unlist() %>%
   as.character()
 
-measure_all_lst_phy_inactive <- measure_lst_phy_inactive
+measure_all_lst_phy_inactive <- measure_lst_phy_inactive[c(-14, -16, -18, -20, -22, -24, -25, -26)]
 measure_top3_lst_phy_inactive <- measure_lst_phy_inactive[c(1:3)]
-measure_lst_phy_inactive <- measure_lst_phy_inactive[-c(1:3)]
+measure_lst_phy_inactive <- measure_lst_phy_inactive[c(-1, -2, -3, -14, -16, -18, -20, -22, -24, -25, -26)]
 
 
 measure_lst_teen_brate <- filter(m_step_df_teen_brate, var_name != "(Intercept)") %>%
@@ -435,9 +435,9 @@ domain_lst_teen_brate <- filter(m_step_df_teen_brate, var_name != "(Intercept)")
   unlist() %>%
   as.character()
 
-measure_all_lst_teen_brate <- measure_lst_teen_brate
+measure_all_lst_teen_brate <- measure_lst_teen_brate[c(-2, -4, -13, -22, -26, -29, -33, -35)]
 measure_top3_lst_teen_brate <- measure_lst_teen_brate[c(1, 3, 5)]
-measure_lst_teen_brate <- measure_lst_teen_brate[-c(1, 3, 5)]
+measure_lst_teen_brate <- measure_lst_teen_brate[c(-1, -2, -3, -4, -5, -13, -22, -26, -29, -33, -35)]
 
 
 # Calculate Index with Fixed Slider values

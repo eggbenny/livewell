@@ -379,7 +379,9 @@ shinyServer(function(input, output, session) {
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$iv) %>% 
                  dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b1 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b1 * bm * sign
           
           print(paste0("Mod Route(", input$iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b1, 3)))
           
@@ -389,7 +391,9 @@ shinyServer(function(input, output, session) {
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$iv) %>% 
                  dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b2 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b2 * bm * sign
           
           print(paste0("Mod Route(", input$iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b2, 3)))
           
@@ -399,7 +403,9 @@ shinyServer(function(input, output, session) {
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$iv) %>% 
                  dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b3 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b3 * bm * sign
           print(paste0("Mod Route(", input$iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b3, 3)))
         
         } else {
@@ -459,7 +465,9 @@ shinyServer(function(input, output, session) {
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$rest_iv) %>% 
                  dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b1 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b1 * bm * sign
           print(paste0("Mod Route(", input$rest_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b1, 3)))
         
 
@@ -469,7 +477,9 @@ shinyServer(function(input, output, session) {
                  dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$rest_iv) %>%
                  dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b2 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b2 * bm * sign
 
           print(paste0("Mod Route(", input$rest_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b2, 3)))
         } else if (input$rest_iv_top5 == "per_adults_with_obesity" & input$rest_iv != "Select a Measure") {
@@ -478,7 +488,9 @@ shinyServer(function(input, output, session) {
             dplyr::select(b) %>% unlist() %>% as.numeric()
           bm <- filter(slider_med_data, var_name == input$rest_iv) %>%
             dplyr::select(b) %>% unlist() %>% as.numeric()
-          real_b <- b3 * bm
+          # Get sign so it doesn't mess up the multiplier
+          sign <- sign(bm)
+          real_b <- b3 * bm * sign
           
           print(paste0("Mod Route(", input$rest_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b3, 3)))
           
@@ -518,7 +530,9 @@ shinyServer(function(input, output, session) {
           dplyr::select(b) %>% unlist() %>% as.numeric()
         bm <- filter(slider_med_data, var_name == input$work_iv) %>% 
           dplyr::select(b) %>% unlist() %>% as.numeric()
-        real_b <- b1 * bm
+        # Get sign so it doesn't mess up the multiplier
+        sign <- sign(bm)
+        real_b <- b1 * bm * sign
         
         print(paste0("Mod Route(", input$work_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b1, 3)))
         
@@ -528,7 +542,9 @@ shinyServer(function(input, output, session) {
           dplyr::select(b) %>% unlist() %>% as.numeric()
         bm <- filter(slider_med_data, var_name == input$work_iv) %>% 
           dplyr::select(b) %>% unlist() %>% as.numeric()
-        real_b <- b2 * bm
+        # Get sign so it doesn't mess up the multiplier
+        sign <- sign(bm)
+        real_b <- b2 * bm * sign
         
         print(paste0("Mod Route(", input$work_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b2, 3)))
         
@@ -538,7 +554,9 @@ shinyServer(function(input, output, session) {
           dplyr::select(b) %>% unlist() %>% as.numeric()
         bm <- filter(slider_med_data, var_name == input$work_iv) %>% 
           dplyr::select(b) %>% unlist() %>% as.numeric()
-        real_b <- b3 * bm
+        # Get sign so it doesn't mess up the multiplier
+        sign <- sign(bm)
+        real_b <- b3 * bm * sign
         print(paste0("Mod Route(", input$work_iv, "): ", round(real_b, 3), " = ", round(bm, 3), " * ", round(b3, 3)))
         
       } else {
@@ -5328,6 +5346,8 @@ shinyServer(function(input, output, session) {
             order = rank(score)) 
       }
       
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
+      
       # filter by drop down
       if (input$iv_domain != "Key Impact") {
         subdata <- filter(subdata,
@@ -5335,7 +5355,6 @@ shinyServer(function(input, output, session) {
           )
       }
       
-      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
       
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
@@ -5412,6 +5431,8 @@ shinyServer(function(input, output, session) {
             order = rank(score))
       }
 
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
+      
       
       # filter by drop down
       if (input$rest_iv_domain != "Key Impact") {
@@ -5420,9 +5441,6 @@ shinyServer(function(input, output, session) {
         )
       }
       
-      
-      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
-
       
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
@@ -5498,6 +5516,7 @@ shinyServer(function(input, output, session) {
             order = rank(score))
       }
       
+      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
 
       
       # filter by drop down
@@ -5507,8 +5526,7 @@ shinyServer(function(input, output, session) {
         )
       }
       
-      use_colour <- sort(as.numeric(as.character(unique(subdata$quintile))))
-      
+ 
       p <- ggplot(subdata, aes(label, factor(1))) +
         geom_tile(aes(colour = `Key Impact`, fill = quintile), size = 2.2) +
         geom_text(aes(label = label), size= 4.1, lineheight = .8, fontface = "bold") +
