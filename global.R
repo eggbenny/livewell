@@ -31,6 +31,7 @@ library(QuantPsyc)
 library(EnvStats) # For Outlier detection
 library(bestglm)
 library(urbnmapr)
+library(ggalluvial)
 
 
 # --- Import Processed data ----------------------------------
