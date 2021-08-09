@@ -1,6 +1,6 @@
 # server.R
 # Benedito Chou
-# July 27 2021
+# Aug 8 2021
 
 # --- Server ----------------------------------------------
 
@@ -67,6 +67,19 @@ shinyServer(function(input, output, session) {
    
    observeEvent(input$hide_work_matrix, {
      shinyjs::toggle(id = "work_matrix_box")
+   })
+   
+   # Hide Sankey
+   observeEvent(input$hide_play_sankey, {
+     shinyjs::toggle(id = "play_sankey_box")
+   })
+   
+   observeEvent(input$hide_rest_sankey, {
+     shinyjs::toggle(id = "rest_sankey_box")
+   })
+   
+   observeEvent(input$hide_work_sankey, {
+     shinyjs::toggle(id = "work_sankey_box")
    })
    
    # Hide Scatterplot
@@ -5551,4 +5564,93 @@ shinyServer(function(input, output, session) {
       
     })
     
+    #### Sankey Charts
+    
+    output$play_sankey <- renderPlot({
+      
+      data <- filter(m_step_df_play, var_name != "(Intercept)") %>%
+        arrange(desc(pratt)) %>%
+        filter(var_name %in% measure_all_lst_play)
+      
+      data <- data %>% 
+        left_join(domain_map, by = "var_name")
+      
+      data <- mutate(data, 
+                         Index = "Play",
+                         var = factor(var_name, levels = measure_all_lst_play),
+                         Freq = pratt*15 + 1) %>%
+        ungroup() %>%
+        arrange(pratt)
+      
+      ggplot(data,
+             aes(y = Freq, axis1 = Index, axis2 = Domain, axis3 = var)) +
+        geom_alluvium(aes(fill = Domain), width = 1/12) +
+        geom_stratum(width = 1/20, aes(fill = Domain), color = NA) +
+        geom_text(stat = "stratum", aes(label = after_stat(stratum)), hjust = 1, nudge_x = -.05) +
+        # scale_x_discrete(limits = c("Index", "Domain", "var_name"), expand = c(.05, .05, .05)) +
+        scale_fill_brewer(type = "qual", palette = "Set1") +
+        ggtitle("Play Index") +
+        theme_void() +
+        theme(legend.position = "none")
+      
+    })
+    
+    
+    output$rest_sankey <- renderPlot({
+      
+      data <- filter(m_step_df_rest, var_name != "(Intercept)") %>%
+        arrange(desc(pratt)) %>%
+        filter(var_name %in% measure_all_lst_rest)
+      
+      data <- data %>% 
+        left_join(domain_map, by = "var_name")
+      
+      data <- mutate(data, 
+                     Index = "Rest",
+                     var = factor(var_name, levels = measure_all_lst_rest),
+                     Freq = pratt*15 + 1) %>%
+        ungroup() %>%
+        arrange(pratt)
+      
+      ggplot(data,
+             aes(y = Freq, axis1 = Index, axis2 = Domain, axis3 = var)) +
+        geom_alluvium(aes(fill = Domain), width = 1/12) +
+        geom_stratum(width = 1/20, aes(fill = Domain), color = NA) +
+        geom_text(stat = "stratum", aes(label = after_stat(stratum)), hjust = 1, nudge_x = -.05) +
+        # scale_x_discrete(limits = c("Index", "Domain", "var_name"), expand = c(.05, .05, .05)) +
+        scale_fill_brewer(type = "qual", palette = "Set1") +
+        ggtitle("Rest Index") +
+        theme_void() +
+        theme(legend.position = "none")
+      
+    })
+    
+    output$work_sankey <- renderPlot({
+      
+      data <- filter(m_step_df_work, var_name != "(Intercept)") %>%
+        arrange(desc(pratt)) %>%
+        filter(var_name %in% measure_all_lst_work)
+      
+      data <- data %>% 
+        left_join(domain_map, by = "var_name")
+      
+      data <- mutate(data, 
+                     Index = "Work",
+                     var = factor(var_name, levels = measure_all_lst_work),
+                     Freq = pratt*15 + 1) %>%
+        ungroup() %>%
+        arrange(pratt)
+      
+      ggplot(data,
+             aes(y = Freq, axis1 = Index, axis2 = Domain, axis3 = var)) +
+        geom_alluvium(aes(fill = Domain), width = 1/12) +
+        geom_stratum(width = 1/20, aes(fill = Domain), color = NA) +
+        geom_text(stat = "stratum", aes(label = after_stat(stratum)), hjust = 1, nudge_x = -.05) +
+        # scale_x_discrete(limits = c("Index", "Domain", "var_name"), expand = c(.05, .05, .05)) +
+        scale_fill_brewer(type = "qual", palette = "Set1") +
+        ggtitle("Work Index") +
+        theme_void() +
+        theme(legend.position = "none")
+      
+    })
 })

@@ -1,6 +1,6 @@
 # ui.R
 # Benedito Chou
-# July 27 2021
+# Aug 8 2021
 
 
 # --- ui --------------------------------------------------
@@ -136,6 +136,9 @@ body <- dashboardBody(
                   actionButton("hide_play_matrix", "Show / Hide Matrix",
                                style = "color: darkgrey;
                            background-color: white"),
+                  actionButton("hide_play_sankey", "Show / Hide Sankey",
+                               style = "color: darkgrey;
+                           background-color: white"),
                   actionButton("hide_play_scatter", "Show / Hide Scatterplot",
                                style = "color: darkgrey;
                            background-color: white")
@@ -146,6 +149,11 @@ body <- dashboardBody(
                            choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
                            selected = "Index Measures Quintile Assignment"),
             plotOutput("play_quintile_matrix")
+          ),
+          column(id = "play_sankey_box", width = 12,
+                   box(width = 12,
+                       plotOutput("play_sankey", height = "800px")
+                   )      
           ),
           column(id = "play_scatter_box", width = 12,
             plotOutput("play_grid_plot")
@@ -308,6 +316,9 @@ body <- dashboardBody(
            actionButton("hide_rest_matrix", "Show / Hide Matrix",
                         style = "color: darkgrey;
                            background-color: white"),
+           actionButton("hide_rest_sankey", "Show / Hide Sankey",
+                        style = "color: darkgrey;
+                           background-color: white"),
            actionButton("hide_rest_scatter", "Show / Hide Scatterplot",
                         style = "color: darkgrey;
                            background-color: white")
@@ -318,6 +329,11 @@ body <- dashboardBody(
                                   choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
                                   selected = "Index Measures Quintile Assignment"),
                    plotOutput("rest_quintile_matrix")
+               ),
+               column(id = "rest_sankey_box", width = 12,
+                      box(width = 12,
+                          plotOutput("rest_sankey",  height = "800px")
+                      )      
                ),
                column(id = "rest_scatter_box", width = 12,
                plotOutput("rest_grid_plot")
@@ -451,6 +467,9 @@ body <- dashboardBody(
                          actionButton("hide_work_matrix", "Show / Hide Matrix",
                                       style = "color: darkgrey;
                            background-color: white"),
+                         actionButton("hide_work_sankey", "Show / Hide Sankey",
+                                      style = "color: darkgrey;
+                           background-color: white"),
                          actionButton("hide_work_scatter", "Show / Hide Scatterplot",
                                       style = "color: darkgrey;
                            background-color: white")
@@ -461,6 +480,11 @@ body <- dashboardBody(
                                          choices = c("Index Measures Quintile Assignment", "Order of Measure Impact on Index"),
                                          selected = "Index Measures Quintile Assignment"),
                           plotOutput("work_quintile_matrix")
+                      ),
+                      column(id = "work_sankey_box", width = 12,
+                             box(width = 12,
+                                 plotOutput("work_sankey", height = "800px")
+                             )      
                       ),
                       column(id = "work_scatter_box", width = 12,
                         plotOutput("work_grid_plot")
