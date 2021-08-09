@@ -1,6 +1,6 @@
 # global.R
 # Benedito Chou
-# Aug 2 2021
+# Aug 8 2021
 
 
 # --- Load packages ---------------------------------------
@@ -44,6 +44,10 @@ library(urbnmapr)
 # Load Main Data used in Regression Modeling
 load("www/main_ana_data_df.RData")
 
+# Temp fix name
+names(ana_data_full)[80] <- "per_of_housing_with_no_vehicle_available"
+names(ana_data_full_wgeo)[83] <- "per_of_housing_with_no_vehicle_available"
+
 # Load Extra Data
 load("www/temp_extra_data_labour.RData")
 load("www/temp_extra_data_medicare.RData")
@@ -56,6 +60,11 @@ load("www/income_chg_at_26.RData")
 
 # load Domain Map
 load("www/domain_map.RData")
+
+# Temp fix name
+domain_map <- domain_map %>%
+  mutate(var_name = ifelse(var_name == "per_of_housing_with_vehicles_available", 
+                           "per_of_housing_with_no_vehicle_available", var_name))
 
 # load Region Map
 load("www/region_lkup.RData")
@@ -78,7 +87,20 @@ load("www/m_step_df_obesity.RData")
 
 # Work Index & 2nd Layers
 load("www/m_step_df_work.RData")
+
+# Temp name fix
+m_step_df_work <- m_step_df_work  %>%
+  mutate(var_name = ifelse(var_name == "per_of_housing_with_vehicles_available", 
+                           "per_of_housing_with_no_vehicle_available", var_name))
+
 load("www/m_step_df_teen_brate.RData")
+
+# Temp name fix
+m_step_df_teen_brate <- m_step_df_teen_brate  %>%
+  mutate(var_name = ifelse(var_name == "per_of_housing_with_vehicles_available", 
+                           "per_of_housing_with_no_vehicle_available", var_name))
+
+
 # per_w_grad_or_prof_degree
 # load("www/m_step_df_grad.RData")
 load("www/m_step_df_avg_mdays.RData")
